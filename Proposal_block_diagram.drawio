@@ -1,0 +1,172 @@
+<mxfile host="app.diagrams.net" modified="2023-10-18T04:50:08.321Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36" etag="jeoxALQ4DHhw22p-EjFL" version="22.0.4" type="device">
+  <diagram name="Page-1" id="IiBHPubRIJhhDQsWKsMC">
+    <mxGraphModel dx="792" dy="1132" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="DzXna4c_Wik_IqMQuETI-1" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="30" y="210" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-2" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="950" y="210" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-3" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="335" y="210" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-4" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="640" y="210" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-5" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="168.75" y="730" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-6" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="1570" y="210" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-7" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="210" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-8" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="DzXna4c_Wik_IqMQuETI-1" target="DzXna4c_Wik_IqMQuETI-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="230" y="320" as="sourcePoint" />
+            <mxPoint x="280" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-9" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;Host Mode&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="766.25" y="100" width="215" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-11" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;Host&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="61.25" y="275" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-13" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;Command Encoder/Decoder&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="671.25" y="275" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-14" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;UART TX/RX&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="366" y="275" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-15" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="515" y="299.5" as="sourcePoint" />
+            <mxPoint x="640" y="299.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-16" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="DzXna4c_Wik_IqMQuETI-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="820" y="299.5" as="sourcePoint" />
+            <mxPoint x="945" y="299.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-17" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;Encryption/Decryption&lt;br&gt;&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="981.25" y="275" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-18" value="&lt;font color=&quot;#ffffff&quot;&gt;Bluetooth Command Encoder/Decoder&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="1291.25" y="275" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-19" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.497;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="DzXna4c_Wik_IqMQuETI-7">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1130" y="299.5" as="sourcePoint" />
+            <mxPoint x="1255" y="299.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-20" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;Bluetooth Interface (SPI/I2C)&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="1601.25" y="275" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-21" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;Bluetooth Interface (SPI/I2C)&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="200" y="795" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-22" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.497;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1440" y="300" as="sourcePoint" />
+            <mxPoint x="1570" y="299.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-23" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;Slave Mode&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="766.25" y="640" width="215" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-24" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="473.5" y="730" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-25" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="1088.75" y="730" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-27" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="1398.75" y="730" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-28" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="778.75" y="730" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-29" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="348.75" y="819.5" as="sourcePoint" />
+            <mxPoint x="473.75" y="819.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-30" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;IMU Interface (SPI/I2C)&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="795" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-31" value="&lt;font color=&quot;#ffffff&quot;&gt;&lt;span style=&quot;background-color: rgb(0, 0, 0);&quot;&gt;Bluetooth Command Encoder/Decoder&lt;/span&gt;&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="504.75" y="795" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-32" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;Encryption/Decryption&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="810" y="795" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-33" value="&lt;font style=&quot;background-color: rgb(0, 0, 0);&quot; color=&quot;#ffffff&quot;&gt;Command Encoder/Decoder&lt;/font&gt;" style="text;align=center;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#000000;strokeColor=#ae4132;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="795" width="117.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-35" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="653.5" y="819.5" as="sourcePoint" />
+            <mxPoint x="778.5" y="819.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-36" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="958.75" y="819.5" as="sourcePoint" />
+            <mxPoint x="1088.75" y="820" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-37" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.497;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1268.75" y="820" as="sourcePoint" />
+            <mxPoint x="1398.75" y="819.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-45" value="TX" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="802.6599999999999" y="430" width="71.87" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-46" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="873.5899999999999" y="450" as="sourcePoint" />
+            <mxPoint x="944.8399999999999" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-48" value="RX" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="886.8799999999999" y="480" width="71.87" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-49" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="889.9999999999999" y="500" as="sourcePoint" />
+            <mxPoint x="820" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-50" value="RX" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="790.7099999999998" y="930" width="71.87" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-51" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="861.6399999999999" y="950" as="sourcePoint" />
+            <mxPoint x="932.8899999999999" y="950" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-52" value="TX" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="874.9299999999998" y="980" width="71.87" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="DzXna4c_Wik_IqMQuETI-53" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="878.0499999999998" y="1000" as="sourcePoint" />
+            <mxPoint x="808.05" y="1000" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
