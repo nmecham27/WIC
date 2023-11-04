@@ -2,7 +2,7 @@
 // Description:       Simple test bench for SPI Master with CS module
 ///////////////////////////////////////////////////////////////////////////////
 
-`include "SPI_Master.v"
+//`include "SPI_Master.v"
 
 module SPI_Master_With_Single_CS_TB ();
   
@@ -76,12 +76,9 @@ module SPI_Master_With_Single_CS_TB ();
   
   initial
     begin
-      // Required for EDA Playground
-      $dumpfile("dump.vcd"); 
-      $dumpvars;
-      
       repeat(10) @(posedge r_Clk);
       r_Rst_L  = 1'b0;
+
       repeat(10) @(posedge r_Clk);
       r_Rst_L          = 1'b1;
       
@@ -92,7 +89,7 @@ module SPI_Master_With_Single_CS_TB ();
       $display("Sent out 0xC2, Received 0x%X", w_Master_RX_Byte); 
 
       repeat(100) @(posedge r_Clk);
-      $finish();      
+      //$finish();      
     end // initial begin
 
 endmodule // SPI_Master_With_Single_CS_TB
