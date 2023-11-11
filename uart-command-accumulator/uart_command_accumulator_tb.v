@@ -8,6 +8,7 @@ module uart_command_accumulator_tb;
   reg reset;
   reg [7:0] input_data;
   reg accumulate;
+  reg ble_side;
 
   // Outputs
   wire [1023:0] output_data;
@@ -26,6 +27,7 @@ module uart_command_accumulator_tb;
     .reset(reset),
     .input_data(input_data),
     .accumulate(accumulate),
+    .ble_side(ble_side),
     .output_data(output_data),
     .output_data_size(output_data_size),
     .done(done),
@@ -42,6 +44,7 @@ module uart_command_accumulator_tb;
 
   // Reset initialization
   initial begin
+    ble_side = 1'b0;
     reset = 1'b1;
     #10;
     reset = 1'b0;
@@ -122,6 +125,41 @@ module uart_command_accumulator_tb;
       #5;
       input_data = input_data + 8'h1;
     end
+
+    #20;
+    // Test the BLE side of the accumulate
+    ble_side = 1'b1;
+    #10;
+    reset = 1'b1;
+    #10;
+    reset = 1'b0;
+    #10;
+    for(i = 0; i < 10; i = i + 1 ) begin
+      input_data = 8'h27;
+      accumulate = 1'b1;
+      #5;
+      accumulate = 1'b0;
+      #5;
+    end
+
+    input_data = 8'hBE;
+    #5;
+    accumulate = 1'b1;
+    #5;
+    accumulate = 1'b0;
+    #5;
+    input_data = 8'hEF;
+    accumulate = 1'b1;
+    #5;
+    accumulate = 1'b0;
+    #30;
+    input_data = 8'h0D;
+    #5;
+    accumulate = 1'b1;
+    #5;
+    accumulate = 1'b0;
+    #5;
+
   end
 
 endmodule

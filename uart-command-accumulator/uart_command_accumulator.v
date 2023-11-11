@@ -5,6 +5,7 @@ module uart_command_accumulator #(
   input wire reset,
   input wire[7:0] input_data,
   input wire accumulate,
+  input wire ble_side,
   output reg[1023:0] output_data,
   output reg[7:0] output_data_size,
   output reg done,
@@ -55,22 +56,42 @@ module uart_command_accumulator #(
         4'h1: begin // Accumualte state
           if(next_state == 4'h1) begin
             if(accumulate && !timeout_alarm) begin
-              if( input_data != 8'hBE ) begin
-                if(output_index <= 1023) begin
-                  internal_value_holder[output_index -: 8] = input_data[7:0];
-                  output_index = output_index + 8;
-                  output_data_size = output_data_size + 8'h1;
-                  next_state = 4'h1; // Stay in this state
+              if(ble_side) begin
+                if(input_data != 8'h0D) begin // check for carriage return
+                  if(output_index <= 1023) begin
+                    internal_value_holder[output_index -: 8] = input_data[7:0];
+                    output_index = output_index + 8;
+                    output_data_size = output_data_size + 8'h1;
+                    next_state = 4'h1; // Stay in this state
+                  end else begin
+                    // We received too many bytes without getting the terminate byte,
+                    // we should set the error flag and return to the initial state
+                    output_index = 7;
+                    error <= 1'b1;
+                    internal_value_holder <= 1024'h0;
+                    next_state <= 4'h0; // Go back to initial state
+                  end
                 end else begin
-                  // We received too many bytes without getting the terminate byte,
-                  // we should set the error flag and return to the initial state
-                  output_index = 7;
-                  error <= 1'b1;
-                  internal_value_holder <= 1024'h0;
-                  next_state <= 4'h0; // Go back to initial state
+                  next_state = 4'h3; // Move right to the output state
                 end
               end else begin
-                next_state = 4'h2; // Move to the final byte state
+                if( input_data != 8'hBE ) begin
+                  if(output_index <= 1023) begin
+                    internal_value_holder[output_index -: 8] = input_data[7:0];
+                    output_index = output_index + 8;
+                    output_data_size = output_data_size + 8'h1;
+                    next_state = 4'h1; // Stay in this state
+                  end else begin
+                    // We received too many bytes without getting the terminate byte,
+                    // we should set the error flag and return to the initial state
+                    output_index = 7;
+                    error <= 1'b1;
+                    internal_value_holder <= 1024'h0;
+                    next_state <= 4'h0; // Go back to initial state
+                  end
+                end else begin
+                  next_state = 4'h2; // Move to the final byte state
+                end
               end
             end else if (timeout_alarm) begin
               error <= 1'b1;

@@ -10,7 +10,7 @@ module bluetooth_encoder_tb;
   reg reset;
 
   // Outputs
-  wire [127:0] output_data;
+  wire [143:0] output_data;
   wire done;
 
   // Instantiate the module under test
@@ -42,16 +42,20 @@ module bluetooth_encoder_tb;
   // Test stimulus
   initial begin
     // Provide test vectors here
-    // Example:
     input_data = 32'h12345678;
     command_select = 4'b001;
     start = 0;
-    #13
+    #10
     start = 1;
     #10;
     start = 0;
-    // #100;
-    // ...
+    #20;
+    input_data = 32'h12345678;
+    command_select = 4'h2;
+    #5;
+    start = 1;
+    #5;
+    start = 0;
   end
 
   // Monitor
