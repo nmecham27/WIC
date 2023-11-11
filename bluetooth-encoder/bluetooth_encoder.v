@@ -4,7 +4,7 @@ module bluetooth_encoder (
   input wire start,
   input wire clk,
   input wire reset,
-  output reg [127:0] output_data,
+  output reg [143:0] output_data,
   output reg done
 );
 
@@ -35,11 +35,13 @@ parameter ASCII_X = 88; // ASCII value for 'X'
 parameter ASCII_Y = 89; // ASCII value for 'Y'
 parameter ASCII_Z = 90; // ASCII value for 'Z'
 parameter ASCII_PLUS = 43; // ASCII value for '+'
+parameter ASCII_CARRIAGE_RETURN = 13; // ASCII value for "/r"
+parameter ASCII_EQUAL = 61; // ASCII value for '='
 
 //AT+BLEUARTTX
-reg [95:0] tx_command;
+reg [103:0] tx_command;
 //AT+BLEUARTRX
-reg [95:0] rx_command;
+reg [103:0] rx_command;
 
 reg [3:0] state;
 reg [3:0] next_state;
@@ -72,6 +74,7 @@ always @(posedge reset or input_data or state or posedge start) begin
     tx_command[79:72] <= ASCII_T;
     tx_command[87:80] <= ASCII_T;
     tx_command[95:88] <= ASCII_X;
+    tx_command[103:96] <= ASCII_EQUAL;
 
     // Set the rx_command register to "AT+BLEUARTRX"
     rx_command[7:0] <= ASCII_A;
@@ -84,8 +87,9 @@ always @(posedge reset or input_data or state or posedge start) begin
     rx_command[63:56] <= ASCII_A;
     rx_command[71:64] <= ASCII_R;
     rx_command[79:72] <= ASCII_T;
-    rx_command[87:80] <= ASCII_T;
+    rx_command[87:80] <= ASCII_R;
     rx_command[95:88] <= ASCII_X;
+    rx_command[103:96] <= ASCII_CARRIAGE_RETURN;
 
     next_state <= 4'h0;
     done = 1'b1;
@@ -102,19 +106,21 @@ always @(posedge reset or input_data or state or posedge start) begin
         case( command_select )
           4'h1: begin
             // Concatenate tx_command and input_data and store it in output_data
-            output_data[95:0] = tx_command[95:0];
-            output_data[103:96] = input_data[7:0];
-            output_data[111:104] = input_data[15:8];
-            output_data[119:112] = input_data[23:16];
-            output_data[127:120] = input_data[31:24];
+            output_data[103:0] = tx_command[103:0];
+            output_data[111:104] = input_data[7:0];
+            output_data[119:112] = input_data[15:8];
+            output_data[127:120] = input_data[23:16];
+            output_data[135:128] = input_data[31:24];
+            output_data[143:136] = ASCII_CARRIAGE_RETURN;
           end
           4'h2: begin
             // Concatenate rx_command and input_data and store it in output_data
-            output_data[95:0] = rx_command[95:0];
-            output_data[103:96] = input_data[7:0];
-            output_data[111:104] = input_data[15:8];
-            output_data[119:112] = input_data[23:16];
-            output_data[127:120] = input_data[31:24];
+            output_data[103:0] = rx_command[103:0];
+            output_data[111:104] = 8'h0;
+            output_data[119:112] = 8'h0;
+            output_data[127:120] = 8'h0;
+            output_data[135:128] = 8'h0;
+            output_data[143:136] = 8'h0;
           end
           default: begin
             output_data = 128'hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
