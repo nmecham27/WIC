@@ -63,7 +63,7 @@ module spi_decoder_tb;
     @(posedge clk)
     data_valid = 0;
     @(posedge clk)
-    @(posedge clk)
+    @(posedge clk) // wait some time between transmissions of data
     @(posedge clk)
     // Test case 2: Recieve 16 bits of data again
     data_valid = 1;
