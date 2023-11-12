@@ -1,3 +1,5 @@
+//get some encryption and change it into a command
+//get data back and send it to be encrypted.
 module spi_decoder (
     input wire clk,         // Clock signal
     input wire rst_n,       // Active-low reset
@@ -6,8 +8,13 @@ module spi_decoder (
     input wire roll_data    // Data received for the "roll" command
 );
 
+ // RX (MISO) Signals
+   output reg [$clog2(MAX_BYTES_PER_CS+1)-1:0] o_RX_Count,  // Index RX byte
+   output       o_RX_DV,     // Data Valid pulse (1 clock cycle)
+   output [7:0] o_RX_Byte,   // Byte received on MISO
+
 reg [7:0] rx_data;
-wire roll_cmd_detected;
+reg roll_cmd_detected;
 
 // FSM states for SPI decoding
 parameter IDLE = 2'b00;
