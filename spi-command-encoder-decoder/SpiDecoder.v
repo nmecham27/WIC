@@ -31,7 +31,7 @@ end
 always @(*) begin
     case (state)
         IDLE: begin
-            if (data_valid == 1'b1) begin
+            if (data_valid == 1'b1) begin // if a data valid signal is recieved from the spi get that data and prepare it to be sent out
                 tx_byte <= rx_byte;
                 valid_out <= 1'b1;
                 next_state <= DATA_RECEIVED;
@@ -47,7 +47,7 @@ always @(*) begin
                 bytes_counted <= 0;
                 valid_out <= 1'b0;
                 next_state <= IDLE;
-            end else if(data_valid == 1) begin
+            end else if(data_valid == 1) begin // if a data valid signal is recieved from the spi get that data and prepare it to be sent out
                 tx_byte <= rx_byte;
                 valid_out <= 1'b1;
                 if(RX_Count-1 == bytes_counted)begin
@@ -58,11 +58,11 @@ always @(*) begin
                 valid_out <= 1'b0;
             end
         end
-       
         default: next_state <= IDLE;
     endcase
 end
 
+//this is used to keep track of bytes counted to help show when all of the data has been recieved, this is the part I'm not sure I did correctly
 always @(*) begin
     if(data_valid)begin
         bytes_counted = bytes_counted + 1;
