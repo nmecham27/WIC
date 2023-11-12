@@ -1,25 +1,22 @@
 //get some encryption and change it into a command
 //get data back and send it to be encrypted.
-module spi_decoder (
+module spi_decoder #(
+    parameter MAX_BYTES_PER_CS = 2
+) (
     input wire clk,         // Clock signal
     input wire rst_n,       // Active-low reset
-    input wire miso,        // Master In Slave Out (SPI data in)
-    output wire roll_cmd,   // Roll command signal
-    input wire roll_data    // Data received for the "roll" command
+    input wire data_valid,        // Data valid pulse
+    input reg [$clog2(MAX_BYTES_PER_CS+1)-1:0] RX_Count,    // Number of bytes this will recieve from the spi
+    input [7:0] rx_byte,    //byte recieved from spi
+    output reg [7:0] tx_byte,   //byte to send back to the master
+    output reg valid_out     //the byte is ready to transmit
 );
 
- // RX (MISO) Signals
-   output reg [$clog2(MAX_BYTES_PER_CS+1)-1:0] o_RX_Count,  // Index RX byte
-   output       o_RX_DV,     // Data Valid pulse (1 clock cycle)
-   output [7:0] o_RX_Byte,   // Byte received on MISO
-
-reg [7:0] rx_data;
-reg roll_cmd_detected;
+reg [$clog2(MAX_BYTES_PER_CS+1)-1:0] bytes_counted = 0;
 
 // FSM states for SPI decoding
 parameter IDLE = 2'b00;
-parameter CMD_RECEIVED = 2'b01;
-parameter DATA_RECEIVED = 2'b10;
+parameter DATA_RECEIVED = 2'b01;
 
 reg [1:0] state, next_state;
 
@@ -31,33 +28,46 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-always @* begin
+always @(*) begin
     case (state)
         IDLE: begin
-            rx_data <= 8'b0;
-            roll_cmd_detected <= 1'b0;
-            if (miso == 1'b0) begin
-                next_state <= CMD_RECEIVED;
+            if (data_valid == 1'b1) begin
+                tx_byte <= rx_byte;
+                valid_out <= 1'b1;
+                next_state <= DATA_RECEIVED;
             end else begin
+                tx_byte <= 8'b0;
+                bytes_counted <= 0;
+                valid_out <= 1'b0;
                 next_state <= IDLE;
             end
         end
-        CMD_RECEIVED: begin
-            rx_data <= {rx_data[6:0], miso};
-            if (rx_data == 8'b01000001) begin
-                roll_cmd_detected <= 1'b1;
-            end
-            next_state <= DATA_RECEIVED;
-        end
         DATA_RECEIVED: begin
-            roll_cmd_detected <= 1'b0;
-            next_state <= IDLE;
+            if(RX_Count == bytes_counted)begin //we recieved every byte from this transmission
+                bytes_counted <= 0;
+                valid_out <= 1'b0;
+                next_state <= IDLE;
+            end else if(data_valid == 1) begin
+                tx_byte <= rx_byte;
+                valid_out <= 1'b1;
+                if(RX_Count-1 == bytes_counted)begin
+                    next_state <= IDLE;
+                end else begin
+                end
+            end else begin
+                valid_out <= 1'b0;
+            end
         end
+       
         default: next_state <= IDLE;
     endcase
 end
 
-// Output signals
-assign roll_cmd = roll_cmd_detected;
+always @(*) begin
+    if(data_valid)begin
+        bytes_counted = bytes_counted + 1;
+    end
+
+end
 
 endmodule
