@@ -9,6 +9,7 @@ module uart_command_accumulator_tb;
   reg [7:0] input_data;
   reg accumulate;
   reg ble_side;
+  reg soft_reset;
 
   // Outputs
   wire [1023:0] output_data;
@@ -28,6 +29,7 @@ module uart_command_accumulator_tb;
     .input_data(input_data),
     .accumulate(accumulate),
     .ble_side(ble_side),
+    .soft_reset(soft_reset),
     .output_data(output_data),
     .output_data_size(output_data_size),
     .done(done),
@@ -44,6 +46,7 @@ module uart_command_accumulator_tb;
 
   // Reset initialization
   initial begin
+    soft_reset = 0;
     ble_side = 1'b0;
     reset = 1'b1;
     #10;

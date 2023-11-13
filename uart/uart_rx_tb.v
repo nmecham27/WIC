@@ -4,6 +4,7 @@ module uart_rx_tb;
   reg clk;
   reg rst;
   reg rx;
+  reg soft_reset;
   wire [7:0] data;
   wire valid;
 
@@ -15,6 +16,7 @@ module uart_rx_tb;
     .clk(clk),
     .rst(rst),
     .rx(rx),
+    .soft_reset(soft_reset),
     .data(data),
     .valid(valid)
   );
@@ -28,6 +30,7 @@ module uart_rx_tb;
   // Testbench code to provide inputs
   initial begin
     // Initialize inputs
+    soft_reset = 0;
     clk = 0;
     rst = 1;
     rx = 1;

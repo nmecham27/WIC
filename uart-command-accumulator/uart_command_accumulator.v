@@ -6,6 +6,7 @@ module uart_command_accumulator #(
   input wire[7:0] input_data,
   input wire accumulate,
   input wire ble_side,
+  input wire soft_reset,
   output reg[1023:0] output_data,
   output reg[7:0] output_data_size,
   output reg done,
@@ -20,7 +21,7 @@ module uart_command_accumulator #(
   integer output_index;
   integer timeout_count;
 
-  always @(posedge reset or posedge timeout_alarm or state or posedge accumulate) begin
+  always @(posedge reset or posedge timeout_alarm or state or posedge accumulate or posedge soft_reset) begin
     if(reset) begin
       output_data <= 1024'h0;
       output_data_size <= 8'h0;
@@ -30,6 +31,8 @@ module uart_command_accumulator #(
       error <= 1'b0;
       reset_timeout_alarm <= 1'b1;
       internal_value_holder <= 1024'h0;
+    end else if(soft_reset) begin
+      done <= 1'b0;
     end else begin
       case(state)
         4'h0: begin // Initial state

@@ -5,6 +5,7 @@ module uart_rx #(
   input wire clk,
   input wire rst,
   input wire rx,
+  input wire soft_reset,
   output reg [7:0] data,
   output reg valid
 );
@@ -27,13 +28,15 @@ module uart_rx #(
     .baud_out(baud_clk)  // Connect baud_out to baud_clk
   );
   
-  always @(posedge clk or posedge rst) begin
+  always @(posedge clk or posedge rst or posedge soft_reset) begin
     if (rst) begin
       state <= 4'b0000;
       count <= 4'b0000;
       shift_reg <= 11'b00000000000;
       valid <= 1'b0;
       data <= 8'b0;
+    end if(soft_reset) begin
+      valid <= 1'b0;
     end else begin
       state <= next_state;
     end

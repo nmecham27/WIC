@@ -14,6 +14,7 @@ module top_level_uart #(
 
   wire data_wire;
   wire baud_clk;
+  reg soft_reset;
 
   // Instantiate baud_rate_generator module
   baud_rate_generator #(
@@ -44,6 +45,7 @@ module top_level_uart #(
     .clk(clk),
     .rst(reset),
     .rx(data_wire),
+    .soft_reset(soft_reset),
     .data(uart_rx),
     .valid(valid)
   );
