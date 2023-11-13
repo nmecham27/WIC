@@ -6,7 +6,6 @@ module host_uart_command_dec (
   output reg[255:0] output_data, // The command that comes out will be 255 bytes
   output reg done,
   output reg error,
-  //output reg encrypt_enable,
   output reg[15:0] cmd_select
 );
 
