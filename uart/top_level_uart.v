@@ -8,7 +8,6 @@ module top_level_uart #(
   input wire start_transmit,
   input wire load_data,
   output wire[7:0] uart_rx,
-  //output wire baud_clk,
   output wire valid,
   output wire tx_done
 );

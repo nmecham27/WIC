@@ -1,5 +1,5 @@
 module bluetooth_encoder (
-  input wire[32:0] input_data,
+  input wire[31:0] input_data,
   input wire [3:0] command_select,
   input wire start,
   input wire clk,

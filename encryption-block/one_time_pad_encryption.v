@@ -1,21 +1,21 @@
 module otp_encryption_decryption (
-  input wire[7:0] input_data,
+  input wire[15:0] input_data,
   input wire reset,
   input wire passthrough,
   input wire start,
-  output reg[7:0] output_data,
+  output reg[15:0] output_data,
   output reg done
 );
 
-  reg [7:0] key;
+  reg [15:0] key;
   reg [3:0] state;
   reg [3:0] next_state;
   reg locked_for_single_transaction;
 
   always @(posedge reset, input_data, state, start) begin
     if (reset) begin
-      key <= 8'h27;
-      output_data <= 8'h00;
+      key <= 16'h3327;
+      output_data <= 16'h00;
       next_state <= 4'b0000;
       done <= 1'b1;
     end else if (!passthrough) begin
