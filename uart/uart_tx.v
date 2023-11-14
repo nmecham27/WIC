@@ -15,41 +15,45 @@ module uart_tx (
   reg reset_bit_count;
 
   
-  always @(state, start_transmit, bit_count) begin
-    case (state)
-      4'b0000: begin // Idle state
-        if (start_transmit) begin
-          next_state = 4'b0001; // Transition to Start bit state
-          reset_bit_count = 1'b1;
-        end else begin
-          tx_data = 1'b1;
+  always @(posedge reset or state or posedge start_transmit or bit_count) begin
+    if(reset) begin
+      next_state <= 4'h0;
+    end else begin
+      case (state)
+        4'b0000: begin // Idle state
+          if (start_transmit) begin
+            next_state = 4'b0001; // Transition to Start bit state
+            reset_bit_count = 1'b1;
+          end else begin
+            tx_data = 1'b1;
+            reset_bit_count = 1'b0;
+          end
+        end
+        4'b0001: begin // Start bit
           reset_bit_count = 1'b0;
+          if (bit_count > 1) begin
+            tx_data = 1'b0;
+            next_state <= 4'b0010;
+          end else begin
+            next_state <= 4'b0001;
+          end
         end
-      end
-      4'b0001: begin // Start bit
-        reset_bit_count = 1'b0;
-        if (bit_count > 1) begin
-          tx_data = 1'b0;
-          next_state <= 4'b0010;
-        end else begin
-          next_state <= 4'b0001;
+        4'b0010: begin // Data bits
+          if (bit_count >= 10) begin
+            tx_data = shift_register[bit_count-3];
+            next_state = 4'b0100; // Transition to Stop bit state
+          end else if (bit_count >= 3 && bit_count < 10) begin
+            tx_data = shift_register[bit_count-3];
+          end else begin
+            next_state <= 4'b0001;
+          end
         end
-      end
-      4'b0010: begin // Data bits
-        if (bit_count >= 10) begin
-          tx_data = shift_register[bit_count-3];
-          next_state = 4'b0100; // Transition to Stop bit state
-        end else if (bit_count >= 3 && bit_count < 10) begin
-          tx_data = shift_register[bit_count-3];
-        end else begin
-          next_state <= 4'b0001;
+        4'b0100: begin // Stop bit
+          next_state = 4'b0000; // Transition back to Idle state
+          tx_data = 1'b1; // Stop bit is always 1
         end
-      end
-      4'b0100: begin // Stop bit
-        next_state = 4'b0000; // Transition back to Idle state
-        tx_data = 1'b1; // Stop bit is always 1
-      end
-    endcase
+      endcase
+    end
   end
 
   always @(posedge clk or posedge reset) begin

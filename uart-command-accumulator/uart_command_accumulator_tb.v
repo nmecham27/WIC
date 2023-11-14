@@ -55,19 +55,19 @@ module uart_command_accumulator_tb;
     for(i = 0; i < 10; i = i + 1 ) begin
       input_data = 8'h27;
       accumulate = 1'b1;
-      #5;
+      #60;
       accumulate = 1'b0;
       #5;
     end
 
     input_data = 8'hBE;
     accumulate = 1'b1;
-    #5;
+    #60;
     accumulate = 1'b0;
     #5;
     input_data = 8'hEF;
     accumulate = 1'b1;
-    #5;
+    #60;
     accumulate = 1'b0;
     #30;
 
@@ -79,7 +79,7 @@ module uart_command_accumulator_tb;
     input_data = 8'h1;
     for(i = 0; i < 10; i = i + 1 ) begin
       accumulate = 1'b1;
-      #5;
+      #60;
       accumulate = 1'b0;
       #5;
       input_data = input_data + 8'h1;
@@ -95,7 +95,7 @@ module uart_command_accumulator_tb;
     input_data = 8'h1;
     for(i = 0; i < 128; i = i + 1 ) begin
       accumulate = 1'b1;
-      #5;
+      #60;
       accumulate = 1'b0;
       #5;
       input_data = input_data + 8'h1;
@@ -104,12 +104,12 @@ module uart_command_accumulator_tb;
     input_data = 8'hBE;
     #5
     accumulate = 1'b1;
-    #5;
+    #60;
     accumulate = 1'b0;
     #5;
     input_data = 8'hEF;
     accumulate = 1'b1;
-    #5;
+    #60;
     accumulate = 1'b0;
     #30;
 
@@ -123,7 +123,7 @@ module uart_command_accumulator_tb;
     input_data = 8'h1;
     for(i = 0; i < 129; i = i + 1 ) begin
       accumulate = 1'b1;
-      #5;
+      #60;
       accumulate = 1'b0;
       #5;
       input_data = input_data + 8'h1;
@@ -140,7 +140,7 @@ module uart_command_accumulator_tb;
     for(i = 0; i < 10; i = i + 1 ) begin
       input_data = 8'h27;
       accumulate = 1'b1;
-      #5;
+      #60;
       accumulate = 1'b0;
       #5;
     end
@@ -148,18 +148,18 @@ module uart_command_accumulator_tb;
     input_data = 8'hBE;
     #5;
     accumulate = 1'b1;
-    #5;
+    #60;
     accumulate = 1'b0;
     #5;
     input_data = 8'hEF;
     accumulate = 1'b1;
-    #5;
+    #60;
     accumulate = 1'b0;
     #30;
     input_data = 8'h0D;
     #5;
     accumulate = 1'b1;
-    #5;
+    #60;
     accumulate = 1'b0;
     #5;
 

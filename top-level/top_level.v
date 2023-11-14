@@ -3,6 +3,8 @@
 `include "../uart/baud_rate_generator.v"
 `include "../uart-command-accumulator/uart_command_accumulator.v"
 `include "../uart-command-enc-dec/host_uart_command_enc.v"
+`include "host_specific_top_rx_from_host.v"
+//`include "../bluetooth-encoder/bluetooth_encoder.v"
 
 module top_level (
   input wire clk,
@@ -11,13 +13,13 @@ module top_level (
   input wire ble_uart_rx,
   input wire spi_miso,
   input wire ble_side,
-  output reg host_uart_tx,
-  output reg ble_uart_tx,
+  output wire host_uart_tx,
+  output wire ble_uart_tx,
   output reg spi_mosi
 );
 
   parameter BAUD_RATE = 9600;
-  parameter CLOCK_FREQ = 38400000;
+  parameter CLOCK_FREQ = 50000000; //Target 50 MHz
 
   //Output/Input
   wire baud_clk;
@@ -82,7 +84,7 @@ module top_level (
   reg[1024:0] local_host_encoded_command;
   reg soft_reset;
 
-  parameter TIMEOUT = 1000;
+  parameter TIMEOUT = 4000000;
 
   // Instantiate baud_rate_generator module
   baud_rate_generator #(
@@ -144,7 +146,7 @@ module top_level (
 
   // Instantiate a uart command accumulator module. This will return the accumulated data when it sees 0xBE then 0xEF.
   uart_command_accumulator #(
-    .TIMEOUT(2500)
+    .TIMEOUT(TIMEOUT)
   ) uart_command_accumulator(
     .clk(clk),
     .reset(reset),
@@ -160,7 +162,7 @@ module top_level (
 
   // Instantiate a ble module uart accumulator module. This will return the accumulated data when it sees "\r" or 0x0D.
   uart_command_accumulator #(
-    .TIMEOUT(2500)
+    .TIMEOUT(TIMEOUT)
   ) host_ble_module_uart_accumulator(
     .clk(clk),
     .reset(reset),
@@ -175,7 +177,7 @@ module top_level (
   );
 
   // Instantiate module to decode command from host and encode it into a command to send to the Slave
-  host_specific_top_rx_from_host (
+  host_specific_top_rx_from_host host_rx_top (
     .clk(clk),
     .reset(reset),
     .input_data(accumulated_input_from_host),
@@ -185,7 +187,7 @@ module top_level (
     .done(host_command_decode_done)
   );
 
-  bluetooth_encoder ble_encoder (
+  bluetooth_encoder host_ble_encoder_top (
     .input_data(ble_encoder_input_data),
     .command_select(ble_encoder_cmd),
     .start(ble_encoder_start),
@@ -207,15 +209,16 @@ module top_level (
     .error(host_encoder_error)
   );
 
-  reg [3:0] state;
-  reg [3:0] next_state;
+  reg [7:0] state;
+  reg [7:0] next_state;
+  reg [8:0] go_back_state;
 
   integer transmit_index;
   integer rx_packet_transmit_index;
   integer host_command_transmit_index;
   integer valid_loop_count;
 
-  always @(posedge reset or posedge accumulated_done or state or posedge timeout_alarm) begin
+  always @(posedge reset or posedge accumulated_done or state or posedge timeout_alarm or posedge host_command_decode_done or posedge ble_uart_tx_done or posedge ble_encoder_done or posedge host_ble_accum_done or posedge host_ble_accum_done or posedge host_encoder_done or posedge host_uart_tx_done) begin
     if(reset) begin
       // Reset variables
       transmit_index <= 7;
@@ -224,6 +227,9 @@ module top_level (
       valid_loop_count <= 0;
       reset_timeout_alarm <= 1'b1;
       soft_reset <= 1'b0;
+      next_state <= 8'hf;
+      ble_uart_load_data <= 1'b0;
+      go_back_state <= 8'h0;
     end else begin
       if(!ble_side) begin //Host side processing route
         if(!accumulated_error) begin // If no error found then that means we have a packet to process
@@ -269,8 +275,8 @@ module top_level (
 
             4'h2: begin // Load state
               if(next_state == 4'h2) begin
+                ble_uart_start_transmit = 1'b0;
                 if(ble_uart_tx_done) begin
-                  ble_uart_start_transmit = 1'b0;
                   ble_uart_tx_data <= local_encoded_command_for_slave[transmit_index -: 8];
                   ble_uart_load_data <= 1'b1;
                   next_state <= 4'h3;
@@ -333,8 +339,8 @@ module top_level (
             4'h6: begin // Load uart
               if(next_state == 4'h6) begin
                 if(!timeout_alarm) begin
+                  ble_uart_start_transmit = 1'b0;
                   if(ble_uart_tx_done) begin
-                    ble_uart_start_transmit = 1'b0;
                     ble_uart_tx_data <= local_rx_encoded_packet[rx_packet_transmit_index -: 8];
                     ble_uart_load_data <= 1'b1;
                     next_state <= 4'h7;
@@ -374,13 +380,16 @@ module top_level (
             4'h8: begin // Check UART valid
               if(next_state == 4'h8) begin
                 if(!timeout_alarm) begin
+                  ble_uart_start_transmit = 1'b0;
                   if(ble_uart_rx_valid) begin
                     //Move to packet accumulate state
                     next_state <= 4'h9;
-                  end else if(valid_loop_count < 60) begin
+                  end else if(valid_loop_count < 1000000) begin
                     valid_loop_count = valid_loop_count + 1;
-                    next_state <= 4'h8; // Look out for this could cause issue with not rerunning block
+                    go_back_state <= 8'h8;
+                    next_state <= 8'h10; // Look out for this could cause issue with not rerunning block
                   end else begin
+                    valid_loop_count <= 0;
                     rx_packet_transmit_index <= 7;
                     next_state <= 4'h6;
                   end
@@ -485,6 +494,23 @@ module top_level (
               end
             end
 
+            4'hf: begin
+              if(next_state == 4'hf) begin
+                  soft_reset <= 1'b1;
+                  next_state <= 4'he;
+              end else begin
+                next_state <= next_state;
+              end
+            end
+
+            8'h10: begin
+              if(next_state == 8'h10) begin
+                next_state <= go_back_state;
+              end else begin
+                next_state <= next_state;
+              end
+            end
+
             default: begin
               next_state <= next_state;
             end
@@ -498,7 +524,7 @@ module top_level (
 
   always @(posedge clk or posedge reset) begin
     if (reset) begin
-      state <= 4'b0000;
+      state <= 8'h00;
     end else begin
       state <= next_state;
     end

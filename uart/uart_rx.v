@@ -42,53 +42,57 @@ module uart_rx #(
     end
   end
   
-  always @(state, rx, baud_count, count) begin
-    case (state)
-      4'b0000: begin  // Idle state
-        if (!rx) begin
-          next_state <= 4'b0001;  // Start bit detected, move to next state
-        end else begin
-          next_state <= 4'b0000;
-        end
-      end
-      4'b0001: begin  // Baud offset state
-        if (count < (((CLOCK_FREQ/BAUD_RATE)/2)+15)) begin
-          baud_rst <= 1'b1;
-        end else begin
-          valid <= 1'b0;
-          baud_rst <= 1'b0;
-          next_state <= 4'b0010;
-        end
-      end
-      4'b0010: begin  // Data state
-        if (baud_count == 8) begin
-          next_state <= 4'b0011;  // All data bits received, move to next state
-        end
-      end
-      4'b0011: begin  // Stop bit state
-        if (baud_count >= 9 && baud_count < 10) begin
-          if(rx) begin
-            valid <= 1'b1;
-            data[0] <= shift_reg[0];
-            data[1] <= shift_reg[1];
-            data[2] <= shift_reg[2];
-            data[3] <= shift_reg[3];
-            data[4] <= shift_reg[4];
-            data[5] <= shift_reg[5];
-            data[6] <= shift_reg[6];
-            data[7] <= shift_reg[7];
-            next_state <= 4'b0000;  // Stop bit received, return to idle state
+  always @(posedge rst or state or rx or baud_count or count) begin
+    if (rst) begin
+      next_state <= 4'h0;
+    end else begin  
+      case (state)
+        4'b0000: begin  // Idle state
+          if (!rx) begin
+            next_state <= 4'b0001;  // Start bit detected, move to next state
+          end else begin
+            next_state <= 4'b0000;
           end
-        end else if (baud_count >= 10) begin
-          next_state <= 4'b0000;  // Stop bit not received, return to idle state
-          valid <= 1'b0;
         end
-        else begin
-          next_state <= 4'b0011; // keep in this state
+        4'b0001: begin  // Baud offset state
+          if (count < (((CLOCK_FREQ/BAUD_RATE)/2)+15)) begin
+            baud_rst <= 1'b1;
+          end else begin
+            valid <= 1'b0;
+            baud_rst <= 1'b0;
+            next_state <= 4'b0010;
+          end
         end
-      end
-      default: next_state <= 4'b0000;
-    endcase
+        4'b0010: begin  // Data state
+          if (baud_count == 8) begin
+            next_state <= 4'b0011;  // All data bits received, move to next state
+          end
+        end
+        4'b0011: begin  // Stop bit state
+          if (baud_count >= 9 && baud_count < 10) begin
+            if(rx) begin
+              valid <= 1'b1;
+              data[0] <= shift_reg[0];
+              data[1] <= shift_reg[1];
+              data[2] <= shift_reg[2];
+              data[3] <= shift_reg[3];
+              data[4] <= shift_reg[4];
+              data[5] <= shift_reg[5];
+              data[6] <= shift_reg[6];
+              data[7] <= shift_reg[7];
+              next_state <= 4'b0000;  // Stop bit received, return to idle state
+            end
+          end else if (baud_count >= 10) begin
+            next_state <= 4'b0000;  // Stop bit not received, return to idle state
+            valid <= 1'b0;
+          end
+          else begin
+            next_state <= 4'b0011; // keep in this state
+          end
+        end
+        default: next_state <= 4'b0000;
+      endcase
+    end
   end
   
   always @(posedge clk) begin
