@@ -15,13 +15,14 @@ module uart_command_accumulator #(
 
   reg [3:0] state;
   reg [3:0] next_state;
+  reg [3:0] go_back_state;
   reg [1023:0] internal_value_holder;
   reg timeout_alarm;
   reg reset_timeout_alarm;
   integer output_index;
   integer timeout_count;
 
-  always @(posedge reset or posedge timeout_alarm or state or posedge accumulate or posedge soft_reset) begin
+  always @(posedge reset or posedge timeout_alarm or state or posedge accumulate or negedge accumulate or posedge soft_reset) begin
     if(reset) begin
       output_data <= 1024'h0;
       output_data_size <= 8'h0;
@@ -31,13 +32,15 @@ module uart_command_accumulator #(
       error <= 1'b0;
       reset_timeout_alarm <= 1'b1;
       internal_value_holder <= 1024'h0;
+      go_back_state <= 4'h0;
     end else if(soft_reset) begin
       done <= 1'b0;
     end else begin
       case(state)
         4'h0: begin // Initial state
           if(accumulate && next_state == 4'h0) begin
-            next_state <= 4'h1; // Move to accumulate state
+            next_state <= 4'h4; // Move to accumulate state
+            go_back_state <= 4'h1;
             done <= 1'b0;
             error <= 1'b0;
             output_data <= 1024'h0;
@@ -56,7 +59,7 @@ module uart_command_accumulator #(
           end
         end
 
-        4'h1: begin // Accumualte state
+        4'h1: begin // Accumulate state
           if(next_state == 4'h1) begin
             if(accumulate && !timeout_alarm) begin
               if(ble_side) begin
@@ -65,7 +68,8 @@ module uart_command_accumulator #(
                     internal_value_holder[output_index -: 8] = input_data[7:0];
                     output_index = output_index + 8;
                     output_data_size = output_data_size + 8'h1;
-                    next_state = 4'h1; // Stay in this state
+                    go_back_state <= 4'h1; // Stay in this state
+                    next_state <= 4'h4;
                   end else begin
                     // We received too many bytes without getting the terminate byte,
                     // we should set the error flag and return to the initial state
@@ -83,7 +87,8 @@ module uart_command_accumulator #(
                     internal_value_holder[output_index -: 8] = input_data[7:0];
                     output_index = output_index + 8;
                     output_data_size = output_data_size + 8'h1;
-                    next_state = 4'h1; // Stay in this state
+                    go_back_state = 4'h1; // Stay in this state
+                    next_state = 4'h4;
                   end else begin
                     // We received too many bytes without getting the terminate byte,
                     // we should set the error flag and return to the initial state
@@ -93,7 +98,8 @@ module uart_command_accumulator #(
                     next_state <= 4'h0; // Go back to initial state
                   end
                 end else begin
-                  next_state = 4'h2; // Move to the final byte state
+                  go_back_state = 4'h2; // Move to the final byte state
+                  next_state = 4'h4;
                 end
               end
             end else if (timeout_alarm) begin
@@ -137,9 +143,20 @@ module uart_command_accumulator #(
           if(next_state == 4'h3) begin
             output_data = internal_value_holder;
             done <= 1'b1;
-            next_state <= 4'h0;
+            next_state <= 4'h4;
+            go_back_state <= 4'h0;
           end else begin
             next_state <= next_state;
+          end
+        end
+
+        4'h4: begin // Wait for accumulate to go low
+          if(next_state <= 4'h4) begin
+            if(!accumulate) begin
+              next_state <= go_back_state;
+            end else begin
+              next_state <= next_state;
+            end
           end
         end
 
