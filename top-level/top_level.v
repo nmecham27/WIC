@@ -40,6 +40,9 @@ module top_level (
   reg[31:0] ble_encoder_input_data;
   reg[3:0] ble_encoder_cmd;
   reg ble_encoder_start;
+  //
+  reg [2:0] IMU_Command;
+  reg Send_command_to_imu;
   
   //Outputs
   wire[143:0] encoded_command_for_slave;
@@ -57,6 +60,11 @@ module top_level (
   wire accumulated_error;
   wire ble_encoder_done;
   wire[143:0] ble_encoded_output;
+  wire[1:0] recieved_byte_count;
+  wire IMU_ready_for_next_command;
+  wire[7:0]recieved_byte_from_imu;
+  wire valid_out_from_imu;
+  wire [15:0] data_from_imu;
 
   // Host ble module accumulate reg and wire
   reg[7:0] host_ble_accum_output;
@@ -218,21 +226,22 @@ module top_level (
     //inputs to encoder
     .clk(clk),
     .rst(reset),
-    input wire transmit,
-    input wire [2:0] command,
+    .transmit(Send_command_to_imu),
+    .command(IMU_Command),
 
     //output from encoder
-    output wire ready,
+    .ready(IMU_ready_for_next_command),
 
     //outputs from the decoder
-    output wire [7:0] tx_byte,
-    output wire valid_out,
+    .tx_byte(recieved_byte_from_imu),
+    .valid_out(valid_out_from_imu),
 
     //Spi Interface
     .o_SPI_Clk(o_SPI_Clk),
     .i_SPI_MISO(i_SPI_MISO),
     .o_SPI_MOSI(o_SPI_MOSI),
-    .o_SPI_CS_n(o_SPI_CS_n)
+    .o_SPI_CS_n(o_SPI_CS_n),
+    .recieved_byte_count(recieved_byte_count)
   );
 
   reg [7:0] state;
@@ -548,26 +557,76 @@ module top_level (
       end else begin// Add processing for slave side here
         if(!accumulated_error) begin
           case(state)
-            8'h0:begin//IDLE state waiting for info from bluetooth breakout
-            
+            4'h0:begin//IDLE // RX start
+              // continuously send AT+RX command to ble module
+              // if we get something on the uart (uart RX valid high) then move on
+              // or we could timeout.
+              if(next_state == 4'h4) begin
+                  ble_uart_start_transmit = 1'b0; // Tell the uart module to send the data along
+
+                  // Get the AT command for rx
+                  ble_encoder_input_data = 32'h0;
+                  ble_encoder_cmd = 4'h2; // We are requesting a AT+BLEUARTRX packet
+                  ble_encoder_start = 1'b1;
+                  next_state <= 4'h1;
+
+              end else begin
+                next_state <= next_state;
+              end
             end
-            8'h1:begin//Recieved info from bluetoooth into the UART RX
+            4'h1:begin//Recieved info from bluetoooth into the UART RX
+              if(next_state == 4'h5) begin
+                  ble_encoder_start <= 1'b0;
+                  if(ble_encoder_done) begin
+                    local_rx_encoded_packet <= ble_encoded_output;
+                    next_state <= 4'h2;
+                  end else begin
+                    next_state <= next_state;
+                  end
+              end else begin
+                next_state <= next_state;
+              end
             end
-            8'h2:begin//Bluetooth command decoder
+            4'h2:begin//Bluetooth command decoder
             end
-            8'h3:begin//Decryption/pass through
+            4'h3:begin//Decryption/pass through
             end
-            8'h4:begin//Connect to Command encoder to spi
+            4'h4:begin//Connect to Command encoder to spi
+              Case()//command sent from the host
+                4'h1: //set encrypt disable
+                4'h2: //set encrypt enable
+                4'h3: begin //run a read yaw command
+                  if(IMU_ready_for_next_command)begin
+                    IMU_Command <= 3'b100; //get angular yaw command
+                    Send_command_to_imu <= 1'b1;
+                    next_state <= 4'h5;
+                  end else begin
+                    next_state < next_state;
+                  end
+                end
+              endcase
             end
-            8'h5:begin//Wait for Command encoder to spi to send back info
+            4'h5:begin//Wait for Command encoder to spi to send back info
+              if(valid_out_from_imu)begin
+                if(recieved_byte_count == 0)begin //take the byte and wait for the second byte
+                  data_from_imu[7:0] <= recieved_byte_from_imu; //first byte is the lower 8 bits
+                  next_state <= next_state;
+                end else if(recieved_byte_count == 1)begin//take the byte and move on
+                  data_from_imu[15:8] <= recieved_byte_from_imu; //second byte is the higher 8 bits
+                  next_state <= 4'h6;
+                end
+              end else begin
+                next_state <= next_state;
+              end
+
             end
-            8'h6:begin//encrypt/pass through
+            4'h6:begin//encrypt/pass through (use data_from_imu as the info you will be passing back)
             end
-            8'h7:begin//bluetooth command encoder
+            4'h7:begin//bluetooth command encoder
             end
-            8'h8:begin//send to uart accumulator
+            4'h8:begin//send to uart accumulator
             end
-            8'h9:begin//send on uart
+            4'h9:begin//send on uart
             end
 
           endcase

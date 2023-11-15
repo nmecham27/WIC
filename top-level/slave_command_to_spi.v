@@ -21,7 +21,8 @@ output wire valid_out,
 output o_SPI_Clk,
 input  i_SPI_MISO,
 output o_SPI_MOSI,
-output o_SPI_CS_n
+output o_SPI_CS_n,
+output [1:0]recieved_byte_count
 );
 
 //local parameters
@@ -41,6 +42,7 @@ wire [1:0] TX_Count;
 wire Ready_From_Encoder;
 wire Spi_Ready_For_Another;
 
+assign recieved_byte_count = Count;
 
 //instantiate the spi encoder
 spi_encoder encoder(
@@ -49,6 +51,7 @@ spi_encoder encoder(
     .rst_n(~rst),       // Active-low reset
     .transmit(transmit),    // Command was recieved
     .transmitRecieved(Spi_Ready_For_Another), //the transmission was recieved by the spi and it is ready for the next byte
+    .spi_count(Count), 
     .command(command),    // Roll command signal
     //outputs
     .mosi(Ready_From_Encoder),       // Master Out Slave In (SPI data out) Signal is ready to send

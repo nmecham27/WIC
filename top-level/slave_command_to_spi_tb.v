@@ -16,6 +16,7 @@ module slave_command_to_spi_tb;
   wire o_SPI_Clk;
   wire o_SPI_MOSI;
   wire o_SPI_CS_n;
+  wire [1:0]recieved_byte_count;
 
   // Instantiate the module under test
   slave_command_to_spi dut (
@@ -29,7 +30,8 @@ module slave_command_to_spi_tb;
     .o_SPI_Clk(o_SPI_Clk),
     .i_SPI_MISO(i_SPI_MISO),
     .o_SPI_MOSI(o_SPI_MOSI),
-    .o_SPI_CS_n(o_SPI_CS_n)
+    .o_SPI_CS_n(o_SPI_CS_n),
+    .recieved_byte_count(recieved_byte_count)
   );
 
   // Clock generation
@@ -41,6 +43,7 @@ module slave_command_to_spi_tb;
     rst = 1;
     transmit = 0;
     command = 0;
+    i_SPI_MISO = 1;
 
     #10 rst = 0;
 
@@ -48,8 +51,11 @@ module slave_command_to_spi_tb;
     transmit = 1;
     command = 3;
 
-    #20 transmit = 0;
+    #10 transmit = 0;
 
+    repeat (8) @(posedge o_SPI_Clk)begin
+      i_SPI_MISO = ~ i_SPI_MISO;
+    end
     // Wait for ready signal
     repeat (10) @(posedge clk);
     
@@ -61,8 +67,7 @@ module slave_command_to_spi_tb;
     $display("o_SPI_MOSI = %b", o_SPI_MOSI);
     $display("o_SPI_CS_n = %b", o_SPI_CS_n);
 
-    // End simulation
-    $finish;
+    repeat(100) @(posedge clk);
   end
 
 endmodule

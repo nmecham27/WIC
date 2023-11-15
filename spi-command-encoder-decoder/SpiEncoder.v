@@ -4,6 +4,7 @@ module spi_encoder (
     input wire transmit,    // Command was recieved
     input wire transmitRecieved, //the transmission was recieved by the spi and it is ready for the next byte
     input wire [2:0] command,    // Roll command signal
+    input wire [1:0] spi_count,
     output reg mosi,       // Master Out Slave In (SPI data out) Signal is ready to send
     output reg [7:0] addressToTransfer, //the command register to read
     output reg [1:0] i_TX_Count, // each instruction we send needs to recieve back two bytes
@@ -35,7 +36,7 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-always @* begin
+always @(*) begin
     case (state)
         IDLE: begin
             
@@ -65,7 +66,6 @@ always @* begin
                 transmissionSent <= 1'b0;
                 next_state <= CMD_ACTIVE;
             end else begin
-                start_bit <= 1'b0;
                 next_state <= IDLE;
                 transmissionSent <= 1'b1;
             end
@@ -81,11 +81,25 @@ always @* begin
         end
         DATA_ACTIVE: begin
             if (transmitRecieved) begin
+                if(spi_count == 1)begin
+                    case(addressToTransfer)
+                        8'b10100100: addressToTransfer <= 8'b10100101;
+                        8'b10101010: addressToTransfer <= 8'b10101011;
+                        8'b10100010: addressToTransfer <= 8'b10100011;
+                        8'b10101000: addressToTransfer <= 8'b10101000;
+                        8'b10100110: addressToTransfer <= 8'b10100111;
+                        8'b10101100: addressToTransfer <= 8'b10101100;
+                        default: addressToTransfer <= 8'b00000000;
+                    endcase
+                    start_bit <= 1'b1;
+                    next_state <= CMD_ACTIVE;
+                end else begin
                 transmissionSent <= 1'b1;
-                mosi <= 1'b0;
                 next_state <= IDLE;
+                end
             end else begin
                 start_bit <= 1'b0;
+                mosi <= 1'b0;
                 next_state <= DATA_ACTIVE;
             end
         end
