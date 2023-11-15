@@ -15,7 +15,11 @@ module top_level (
   input wire ble_side,
   output wire host_uart_tx,
   output wire ble_uart_tx,
-  output reg spi_mosi
+  output reg spi_mosi,
+  output o_SPI_Clk,
+  input  i_SPI_MISO,
+  output o_SPI_MOSI,
+  output o_SPI_CS_n
 );
 
   parameter BAUD_RATE = 9600;
@@ -207,6 +211,28 @@ module top_level (
     .output_data(host_encoder_output_data),
     .done(host_encoder_done),
     .error(host_encoder_error)
+  );
+
+  //instantiate from the encode dedcode until the spi
+  slave_command_to_spi slave_encode_to_spi(
+    //inputs to encoder
+    .clk(clk),
+    .rst(reset),
+    input wire transmit,
+    input wire [2:0] command,
+
+    //output from encoder
+    output wire ready,
+
+    //outputs from the decoder
+    output wire [7:0] tx_byte,
+    output wire valid_out,
+
+    //Spi Interface
+    .o_SPI_Clk(o_SPI_Clk),
+    .i_SPI_MISO(i_SPI_MISO),
+    .o_SPI_MOSI(o_SPI_MOSI),
+    .o_SPI_CS_n(o_SPI_CS_n)
   );
 
   reg [7:0] state;
@@ -519,8 +545,34 @@ module top_level (
             end
           endcase
         end
-      end else begin
-        // Add processing for slave side here
+      end else begin// Add processing for slave side here
+        if(!accumulated_error) begin
+          case(state)
+            8'h0:begin//IDLE state waiting for info from bluetooth breakout
+            
+            end
+            8'h1:begin//Recieved info from bluetoooth into the UART RX
+            end
+            8'h2:begin//Bluetooth command decoder
+            end
+            8'h3:begin//Decryption/pass through
+            end
+            8'h4:begin//Connect to Command encoder to spi
+            end
+            8'h5:begin//Wait for Command encoder to spi to send back info
+            end
+            8'h6:begin//encrypt/pass through
+            end
+            8'h7:begin//bluetooth command encoder
+            end
+            8'h8:begin//send to uart accumulator
+            end
+            8'h9:begin//send on uart
+            end
+
+          endcase
+        end
+        
       end
     end
   end
