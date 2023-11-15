@@ -166,7 +166,7 @@ module top_level (
   ) host_ble_module_uart_accumulator(
     .clk(clk),
     .reset(reset),
-    .input_data(host_ble_accum_output),
+    .input_data(ble_command_uart_output),
     .accumulate(ble_uart_rx_valid), // This might need to change. Unsure if driving it with valid will cause issues
     .ble_side(host_ble_accum_side_select),
     .soft_reset(soft_reset),
@@ -218,7 +218,7 @@ module top_level (
   integer host_command_transmit_index;
   integer valid_loop_count;
 
-  always @(posedge reset or posedge accumulated_done or state or posedge timeout_alarm or posedge host_command_decode_done or posedge ble_uart_tx_done or posedge ble_encoder_done or posedge host_ble_accum_done or posedge host_ble_accum_done or posedge host_encoder_done or posedge host_uart_tx_done) begin
+  always @(posedge reset or posedge accumulated_done or state or posedge timeout_alarm or posedge host_command_decode_done or posedge ble_uart_tx_done or posedge ble_encoder_done or posedge host_ble_accum_done or posedge host_encoder_done or posedge host_uart_tx_done) begin
     if(reset) begin
       // Reset variables
       transmit_index <= 7;
@@ -230,6 +230,9 @@ module top_level (
       next_state <= 8'hf;
       ble_uart_load_data <= 1'b0;
       go_back_state <= 8'h0;
+      host_encoder_input_data <= 0;
+      //host_ble_accum_output_data <= 0;
+      host_ble_accum_side_select <= 1'b1;
     end else begin
       if(!ble_side) begin //Host side processing route
         if(!accumulated_error) begin // If no error found then that means we have a packet to process
@@ -423,9 +426,9 @@ module top_level (
             4'ha: begin // Load the host command encoder
               if(next_state == 4'ha) begin
                 // Encode the packet for sending back to host
-                host_encoder_input_data = local_host_ble_accumulated_data[271:8];
+                host_encoder_input_data = local_host_ble_accumulated_data[38:8];
                 host_encoder_cmd_select = local_host_ble_accumulated_data[7:0];
-                host_encoder_suc_or_fail = local_host_ble_accumulated_data[272];
+                host_encoder_suc_or_fail = local_host_ble_accumulated_data[39];
                 host_encoder_start = 1'b1;
                 next_state <= 4'hb;
               end else begin
@@ -436,6 +439,7 @@ module top_level (
             4'hb: begin // Load the host command encoder
               if(next_state == 4'hb) begin
                 // Save the encoded command
+                host_encoder_start = 1'b0;
                 if(host_encoder_done) begin
                   if(!host_encoder_error) begin
                     local_host_encoded_command <= host_encoder_output_data;
@@ -447,7 +451,6 @@ module top_level (
                 end else begin
                   next_state <= next_state;
                 end
-                next_state <= 4'hb;
               end else begin
                 next_state <= next_state;
               end
@@ -455,8 +458,8 @@ module top_level (
 
             4'hc: begin // Load state for sending command back to host
               if(next_state == 4'hc) begin
+                host_uart_start_transmit = 1'b0;
                 if(host_uart_tx_done) begin
-                  host_uart_start_transmit = 1'b0;
                   host_uart_tx_data <= local_host_encoded_command[host_command_transmit_index -: 8];
                   host_uart_load_data <= 1'b1;
                   next_state <= 4'hd;
@@ -478,7 +481,7 @@ module top_level (
                     next_state <= 4'he; // Done so go back to initial
                   end else begin // if we haven't transmitted everything go to a state
                     host_command_transmit_index = host_command_transmit_index + 8;
-                    next_state <= 4'h2; //
+                    next_state <= 4'hc; //
                   end
               end else begin
                 next_state <= next_state;

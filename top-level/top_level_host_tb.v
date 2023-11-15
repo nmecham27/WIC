@@ -8,7 +8,7 @@ module top_level_host_tb;
   reg clk;
   reg reset;
   wire host_uart_rx;
-  reg ble_uart_rx;
+  wire ble_uart_rx;
   reg spi_miso;
   reg ble_side;
   reg start_transmit;
@@ -20,6 +20,14 @@ module top_level_host_tb;
   wire ble_uart_tx;
   wire spi_mosi;
   wire tx_done;
+  wire rx_valid;
+
+  wire[7:0] ble_uart_rx_data;
+
+  reg ble_start_transmit;
+  reg[7:0] ble_uart_tx_data;
+  reg ble_load_data;
+  wire ble_tx_done;
 
   wire data_wire;
   wire baud_clk;
@@ -49,6 +57,30 @@ module top_level_host_tb;
     .tx_finish(tx_done)
   );
 
+  // Instantiate uart_tx module
+  uart_tx ble_tx (
+    .clk(baud_clk),
+    .reset(reset),
+    .start_transmit(ble_start_transmit),
+    .data(ble_uart_tx_data),
+    .load_data(ble_load_data),
+    .tx_data(ble_uart_rx),
+    .tx_finish(ble_tx_done)
+  );
+
+  // Instantiate uart_rx module
+  uart_rx #(
+    .BAUD_RATE(BAUD_RATE),
+    .CLOCK_FREQ(CLOCK_FREQ)
+  ) rx (
+    .clk(clk),
+    .rst(reset),
+    .rx(ble_uart_tx),
+    .soft_reset(soft_reset),
+    .data(ble_uart_rx_data),
+    .valid(rx_valid)
+  );
+
   // Instantiate the DUT
   top_level dut (
     .clk(clk),
@@ -68,6 +100,7 @@ module top_level_host_tb;
   parameter ENCRYPT_BAD_FORMAT_SIZE = 72'h0002FFFFFFFFFFFF01;
   parameter READ_YAW = 56'hFF27FF27FF2703;
   parameter INVALID_COMMAND = 56'hFF27FF27FF2705;
+  parameter ENCRYPT_COMMAND_RSP_FROM_SLAVE = 48'h0D8000000001;
   integer index;
 
   // Clock generation
@@ -101,8 +134,38 @@ module top_level_host_tb;
       #5;
     end
 
+    soft_reset = 1'b1;
     // Add delays and other stimulus as needed
     #100;
+
+    soft_reset = 1'b0;
+
+    while(!rx_valid) begin
+      #20;
+    end
+
+    index = 7;
+    #5000000;
+
+    while(index <= 47) begin
+      ble_uart_tx_data = ENCRYPT_COMMAND_RSP_FROM_SLAVE[index -: 8];
+      $display("Sending uart packed %x", ble_uart_tx_data);
+      #5;
+      ble_load_data = 1'b1;
+      #5;
+      ble_load_data = 1'b0;
+      #5;
+      ble_start_transmit = 1'b1;
+      #5;
+      ble_start_transmit = 1'b0;
+      #5;
+      while(!ble_tx_done) begin
+        #20;
+      end
+      index = index + 8;
+      #5;
+    end
+    
     // Continue adding stimulus and delays as needed
   end
 
