@@ -365,7 +365,7 @@ module top_level (
                   ble_uart_load_data = 1'b0; // Signal that we are done loading data
                   ble_uart_start_transmit = 1'b1; // Tell the uart module to send the data along
                   if(rx_packet_transmit_index >= 143) begin // If we have transmitted everything
-                    // Move to rx start state
+                    // Move to check uart valid state
                     next_state <= 4'h8; // Move to state to check uart valid
                   end else begin // if we haven't transmitted everything go to a state
                     rx_packet_transmit_index = rx_packet_transmit_index + 8;
@@ -426,9 +426,9 @@ module top_level (
             4'ha: begin // Load the host command encoder
               if(next_state == 4'ha) begin
                 // Encode the packet for sending back to host
-                host_encoder_input_data = local_host_ble_accumulated_data[38:8];
+                host_encoder_input_data = local_host_ble_accumulated_data[30:8];
                 host_encoder_cmd_select = local_host_ble_accumulated_data[7:0];
-                host_encoder_suc_or_fail = local_host_ble_accumulated_data[39];
+                host_encoder_suc_or_fail = local_host_ble_accumulated_data[31];
                 host_encoder_start = 1'b1;
                 next_state <= 4'hb;
               end else begin
