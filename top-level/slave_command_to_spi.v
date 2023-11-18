@@ -1,9 +1,11 @@
 `include "../spi-command-encoder-decoder/SPIDecoder.v"
 `include "../spi-command-encoder-decoder/SPIEncoder.v"
-`include "../spi-master/source/Spi_Master_With_Single_CS.v"
-`include "../spi-master/source/Spi_Master.v"
+`include "../spi-master/source/SPI_Master_With_Single_CS.v"
+`include "../spi-master/source/SPI_Master.v"
 
-module slave_command_to_spi(
+module slave_command_to_spi #(
+    parameter CLKS_PER_HALF_BIT = 2
+)(
 //inputs to encoder
 input wire clk,
 input wire rst,
@@ -28,7 +30,7 @@ output [1:0]recieved_byte_count
 //local parameters
 localparam MAX_BYTES_PER_CS = 2;
 localparam SPI_MODE = 0;
-localparam CLKS_PER_HALF_BIT = 2;
+//localparam CLKS_PER_HALF_BIT = 2;
 localparam CS_INACTIVE_CLKS = 1;
 
 //transmitted from spi to decoder

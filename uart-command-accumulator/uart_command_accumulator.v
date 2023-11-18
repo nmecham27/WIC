@@ -143,7 +143,7 @@ module uart_command_accumulator #(
           if(next_state == 4'h3) begin
             output_data = internal_value_holder;
             done <= 1'b1;
-            next_state <= 4'h4;
+            next_state <= 4'h5;
             go_back_state <= 4'h0;
           end else begin
             next_state <= next_state;
@@ -152,6 +152,21 @@ module uart_command_accumulator #(
 
         4'h4: begin // Wait for accumulate to go low
           if(next_state <= 4'h4) begin
+            if(!accumulate && !timeout_alarm) begin
+              next_state <= go_back_state;
+            end else if (timeout_alarm) begin
+              error <= 1'b1;
+              output_index = 7;
+              internal_value_holder <= 1024'h0;
+              next_state <= 4'h0; // Go back to initial state
+            end else begin
+              next_state <= next_state;
+            end
+          end
+        end
+
+        4'h5: begin // Special wait for accumulate to go low that won't cause alarm
+          if(next_state <= 4'h5) begin
             if(!accumulate) begin
               next_state <= go_back_state;
             end else begin
@@ -169,7 +184,7 @@ module uart_command_accumulator #(
       timeout_count <= 0;
       timeout_alarm <= 1'b0;
     end else begin
-      if(state == 4'h1) begin
+      if(state == 4'h1 || state == 4'h2 || state == 4'h4) begin
         if(timeout_count > TIMEOUT) begin
           timeout_alarm <= 1'b1;
         end else begin
