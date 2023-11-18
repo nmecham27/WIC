@@ -2,7 +2,7 @@
 `include "../uart/baud_rate_generator.v"
 
 `timescale 1ns/1ps
-module top_level_host_tb;
+module top_level_slave_tb;
 
   // Inputs
   reg clk;
@@ -98,13 +98,9 @@ module top_level_host_tb;
     .o_SPI_CS_n(o_SPI_CS_n)
   );
 
-  parameter ENCRYPT_ENABLE = 88'hEFBE0101FFFFFFFFFFFF01;
-  parameter ENCRYPT_DISABLE = 72'h0001FFFFFFFFFFFF01;
-  parameter ENCRYPT_BAD_FORMAT_TARGET = 72'h0001FFFFFF27FFFF01;
-  parameter ENCRYPT_BAD_FORMAT_SIZE = 72'h0002FFFFFFFFFFFF01;
-  parameter READ_YAW = 56'hFF27FF27FF2703;
-  parameter INVALID_COMMAND = 56'hFF27FF27FF2705;
-  parameter ENCRYPT_COMMAND_RSP_FROM_SLAVE = 48'h0D8000000001;
+  parameter ENCRYPT_DISABLE = 40'h0D00000001;
+  parameter ENCRYPT_ENABLE = 40'h0D00000002;
+  parameter READ_YAW = 40'h0D00000003;
   integer index;
 
   // Clock generation
@@ -114,14 +110,17 @@ module top_level_host_tb;
 
   // Stimulus generation
   initial begin
-    ble_side = 1'b0;
+    i_SPI_MISO = 1'b1;
+    ble_side = 1'b1;
     clk = 0;
     index = 7;
     reset = 1'b1;
     #10 reset = 1'b0;
     
-    while(index <= 87) begin
-      uart_tx = ENCRYPT_DISABLE[index -: 8];
+    #5000000;
+
+    while(index <= 39) begin
+      uart_tx = READ_YAW[index -: 8];
       #5;
       load_data = 1'b1;
       #5;
@@ -132,38 +131,6 @@ module top_level_host_tb;
       start_transmit = 1'b0;
       #5;
       while(!tx_done) begin
-        #20;
-      end
-      index = index + 8;
-      #5;
-    end
-
-    soft_reset = 1'b1;
-    // Add delays and other stimulus as needed
-    #100;
-
-    soft_reset = 1'b0;
-
-    while(!rx_valid) begin
-      #20;
-    end
-
-    index = 7;
-    #5000000;
-
-    while(index <= 47) begin
-      ble_uart_tx_data = ENCRYPT_COMMAND_RSP_FROM_SLAVE[index -: 8];
-      $display("Sending uart packet %x", ble_uart_tx_data);
-      #5;
-      ble_load_data = 1'b1;
-      #5;
-      ble_load_data = 1'b0;
-      #5;
-      ble_start_transmit = 1'b1;
-      #5;
-      ble_start_transmit = 1'b0;
-      #5;
-      while(!ble_tx_done) begin
         #20;
       end
       index = index + 8;

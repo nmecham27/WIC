@@ -11,6 +11,7 @@ module host_specific_top_rx_from_host_tb;
   wire [143:0] encoded_output;
   wire error;
   wire done;
+  wire encrypt_decrypt_passthrough;
 
   // Instantiate the DUT
   host_specific_top_rx_from_host dut (
@@ -19,6 +20,7 @@ module host_specific_top_rx_from_host_tb;
     .input_data(input_data),
     .send_packet(send_packet),
     .encoded_output(encoded_output),
+    .encrypt_decrypt_passthrough(encrypt_decrypt_passthrough),
     .error(error),
     .done(done)
   );

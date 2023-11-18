@@ -32,19 +32,25 @@ module uart_rx #(
     if (rst) begin
       state <= 4'b0000;
       count <= 4'b0000;
-      shift_reg <= 11'b00000000000;
-      valid <= 1'b0;
-      data <= 8'b0;
-    end if(soft_reset) begin
-      valid <= 1'b0;
     end else begin
       state <= next_state;
     end
+
+    if (state == 4'b0001) begin
+      count <= count + 1;
+    end else begin
+      count <= 0;
+    end
+
   end
   
-  always @(posedge rst or state or rx or baud_count or count) begin
+  always @(posedge rst or state or rx or baud_count or count or posedge soft_reset) begin
     if (rst) begin
       next_state <= 4'h0;
+      valid <= 1'b0;
+      data <= 8'b0;
+    end else if (soft_reset) begin
+      valid <= 1'b0;
     end else begin  
       case (state)
         4'b0000: begin  // Idle state
@@ -94,17 +100,11 @@ module uart_rx #(
       endcase
     end
   end
-  
-  always @(posedge clk) begin
-    if (state == 4'b0001) begin
-      count <= count + 1;
-    end else begin
-      count <= 0;
-    end
-  end
 
-  always @(posedge baud_clk or posedge baud_rst) begin
-    if (baud_rst) begin
+  always @(posedge baud_clk or posedge baud_rst or posedge rst) begin
+    if(rst) begin
+      shift_reg <= 11'b00000000000;
+    end else if (baud_rst) begin
       baud_count <= 0;
     end else if (state == 4'b0010) begin
       shift_reg[baud_count] <= rx;

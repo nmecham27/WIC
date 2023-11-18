@@ -8,6 +8,7 @@ module host_specific_top_rx_from_host (
   input wire[1023:0] input_data,
   input wire send_packet,
   output reg[143:0] encoded_output,
+  output reg encrypt_decrypt_passthrough, // Just need to pass this through to the higher level
   output reg error,
   output reg done
 );
@@ -77,6 +78,7 @@ module host_specific_top_rx_from_host (
     if(reset) begin
       command_dec_start <= 1'b0;
       encryption_passthrough <= 1'b1;
+      encrypt_decrypt_passthrough <= 1'b1;
       encryption_start <= 1'b0;
       ble_input_data <= 32'h0;
       ble_cmd <= 4'h0;
@@ -178,10 +180,13 @@ module host_specific_top_rx_from_host (
           if(next_state == 4'h5) begin
             if(decoded_cmd == 16'h1) begin
               encryption_passthrough <= 1'b1;
+              encrypt_decrypt_passthrough <= 1'b1;
             end else if (decoded_cmd == 16'h2) begin
               encryption_passthrough <= 1'b0;
+              encrypt_decrypt_passthrough <= 1'b0;
             end else begin
               encryption_passthrough <= encryption_passthrough;
+              encrypt_decrypt_passthrough <= encrypt_decrypt_passthrough;
             end
             next_state <= 4'h0;
           end else begin

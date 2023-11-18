@@ -67,7 +67,7 @@ module host_uart_command_enc (
               end
 
               16'h2: begin // Read yaw command rsp
-                output_data[7:0] = ENCRYPT_ENABLE_RSP_ID;
+                output_data[7:0] = READ_YAW_CMD_RSP_ID;
                 output_data[55:7] = 48'h0;
                 output_data[87:56] = internal_value_holder[32:0];
                 output_data[95:88] = internal_msg_status_holder;
