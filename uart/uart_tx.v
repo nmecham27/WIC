@@ -15,7 +15,7 @@ module uart_tx (
   reg reset_bit_count;
 
   
-  always @(posedge reset or state or posedge start_transmit or bit_count) begin
+  always @(posedge reset or posedge state or posedge start_transmit or posedge bit_count) begin
     if(reset) begin
       next_state <= 4'h0;
     end else begin
@@ -98,7 +98,7 @@ module uart_tx (
     end
   end
 
-  always @(load_data) begin
+  always @(posedge load_data) begin
     if (load_data) begin
       shift_register <= data;
     end

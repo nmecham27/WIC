@@ -56,7 +56,7 @@ always @(posedge clk or posedge reset) begin
   end
 end
 
-always @(posedge reset or input_data or state or posedge start) begin
+always @(posedge reset or posedge input_data or posedge state or posedge start) begin
   if (reset) begin
     // Reset output_data to 0
     output_data <= 0;

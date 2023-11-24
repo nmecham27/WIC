@@ -12,7 +12,7 @@ module otp_encryption_decryption (
   reg [3:0] next_state;
   reg locked_for_single_transaction;
 
-  always @(posedge reset, input_data, state, start) begin
+  always @(posedge reset, posedge input_data, posedge state, posedge start) begin
     if (reset) begin
       key <= 16'h3327;
       output_data <= 16'h00;
@@ -46,7 +46,7 @@ module otp_encryption_decryption (
     state <= next_state;
   end
 
-  always @(negedge start, posedge reset, state) begin
+  always @(negedge start, posedge reset, posedge state) begin
     if (!start || reset) begin
       locked_for_single_transaction <= 1'b0;
     end else begin
