@@ -15,42 +15,62 @@ module uart_tx (
   reg reset_bit_count;
 
   
-  always @(posedge reset or posedge state or posedge start_transmit or posedge bit_count) begin
+  always @(reset or state or start_transmit or bit_count) begin
     if(reset) begin
       next_state <= 4'h0;
     end else begin
       case (state)
         4'b0000: begin // Idle state
-          if (start_transmit) begin
-            next_state = 4'b0001; // Transition to Start bit state
-            reset_bit_count = 1'b1;
+          if(next_state == 4'h0) begin
+            if (start_transmit) begin
+              next_state <= 4'b0001; // Transition to Start bit state
+              reset_bit_count <= 1'b1;
+            end else begin
+              tx_data <= 1'b1;
+              reset_bit_count <= 1'b0;
+            end
           end else begin
-            tx_data = 1'b1;
-            reset_bit_count = 1'b0;
+            next_state <= next_state;
           end
         end
         4'b0001: begin // Start bit
-          reset_bit_count = 1'b0;
-          if (bit_count > 1) begin
-            tx_data = 1'b0;
-            next_state <= 4'b0010;
+          if(next_state == 4'h1) begin
+            reset_bit_count <= 1'b0;
+            if (bit_count > 1) begin
+              tx_data <= 1'b0;
+              next_state <= 4'b0010;
+            end else begin
+              next_state <= next_state;
+            end
           end else begin
-            next_state <= 4'b0001;
+            next_state <= next_state;
           end
         end
         4'b0010: begin // Data bits
-          if (bit_count >= 10) begin
-            tx_data = shift_register[bit_count-3];
-            next_state = 4'b0100; // Transition to Stop bit state
-          end else if (bit_count >= 3 && bit_count < 10) begin
-            tx_data = shift_register[bit_count-3];
+          if(next_state == 4'h2) begin
+            if (bit_count >= 10) begin
+              tx_data <= shift_register[bit_count-3];
+              next_state <= 4'b0100; // Transition to Stop bit state
+            end else if (bit_count >= 3 && bit_count < 10) begin
+              tx_data <= shift_register[bit_count-3];
+            end else begin
+              next_state <= 4'b0001;
+            end
           end else begin
-            next_state <= 4'b0001;
+            next_state <= next_state;
           end
         end
         4'b0100: begin // Stop bit
-          next_state = 4'b0000; // Transition back to Idle state
-          tx_data = 1'b1; // Stop bit is always 1
+          if(next_state == 4'h4) begin
+            next_state <= 4'b0000; // Transition back to Idle state
+            tx_data <= 1'b1; // Stop bit is always 1
+          end else begin
+            next_state <= next_state;
+          end
+        end
+
+        default: begin
+          next_state <= next_state;
         end
       endcase
     end
@@ -72,6 +92,9 @@ module uart_tx (
         4'b0010: begin // Data bits
           bit_count <= bit_count + 1;
         end
+        default: begin
+          bit_count <= bit_count;
+        end
       endcase
     end
   end
@@ -85,6 +108,9 @@ module uart_tx (
       case (next_state)
         4'b0000: begin // Idle state
           tx_finish <= 1'b1;
+        end
+        default: begin
+          tx_finish <= tx_finish;
         end
       endcase
     end
@@ -101,6 +127,8 @@ module uart_tx (
   always @(posedge load_data) begin
     if (load_data) begin
       shift_register <= data;
+    end else begin
+      shift_register <= shift_register; // Just keep the same value
     end
   end
 
