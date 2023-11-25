@@ -13,7 +13,7 @@ module host_uart_command_dec (
   reg [3:0] next_state;
   reg [1023:0] internal_value_holder;
 
-  always @(posedge reset or posedge start or state) begin
+  always @(posedge reset or posedge start or posedge state) begin
     if(reset) begin
       done <= 1'b1;
       error <= 1'b0;

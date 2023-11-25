@@ -74,7 +74,7 @@ module host_specific_top_rx_from_host (
     end
   end
 
-  always @(posedge reset or posedge send_packet or state or posedge decode_done or posedge ble_enc_done or posedge encrypt_done) begin
+  always @(posedge reset or posedge send_packet or posedge state or posedge decode_done or posedge ble_enc_done or posedge encrypt_done) begin
     if(reset) begin
       command_dec_start <= 1'b0;
       encryption_passthrough <= 1'b1;

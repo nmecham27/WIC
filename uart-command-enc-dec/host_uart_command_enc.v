@@ -19,7 +19,7 @@ module host_uart_command_enc (
   reg internal_msg_status_holder;
   reg [15:0] internal_cmd_select;
 
-  always @(posedge reset or posedge start or state) begin
+  always @(posedge reset or posedge start or posedge state) begin
     if(reset) begin
       done <= 1'b1;
       error <= 1'b0;

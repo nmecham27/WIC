@@ -286,7 +286,7 @@ module top_level (
 
   always @(posedge reset
            or posedge accumulated_done
-           or state
+           or posedge state
            or posedge timeout_alarm
            or posedge host_command_decode_done
            or posedge ble_uart_tx_done
