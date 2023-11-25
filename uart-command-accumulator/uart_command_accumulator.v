@@ -19,10 +19,12 @@ module uart_command_accumulator #(
   reg [1023:0] internal_value_holder;
   reg timeout_alarm;
   reg reset_timeout_alarm;
+  reg accumulate_low_flag;
+  reg clear_accumulate_low_flag;
   integer output_index;
   integer timeout_count;
 
-  always @(posedge reset or posedge timeout_alarm or posedge state or posedge accumulate or negedge accumulate or posedge soft_reset) begin
+  always @(posedge reset or posedge clk or posedge timeout_alarm or posedge state or posedge accumulate or posedge soft_reset or posedge accumulate_low_flag) begin
     if(reset) begin
       output_data <= 1024'h0;
       output_data_size <= 8'h0;
@@ -33,9 +35,11 @@ module uart_command_accumulator #(
       reset_timeout_alarm <= 1'b1;
       internal_value_holder <= 1024'h0;
       go_back_state <= 4'h0;
+      clear_accumulate_low_flag = 0;
     end else if(soft_reset) begin
       done <= 1'b0;
     end else begin
+      clear_accumulate_low_flag <= 0; // For ease of using just clear this flag before doing anything
       case(state)
         4'h0: begin // Initial state
           if(accumulate && next_state == 4'h0) begin
@@ -152,8 +156,9 @@ module uart_command_accumulator #(
 
         4'h4: begin // Wait for accumulate to go low
           if(next_state <= 4'h4) begin
-            if(!accumulate && !timeout_alarm) begin
+            if(accumulate_low_flag && !timeout_alarm) begin
               next_state <= go_back_state;
+              clear_accumulate_low_flag <= 1;
             end else if (timeout_alarm) begin
               error <= 1'b1;
               output_index = 7;
@@ -167,15 +172,34 @@ module uart_command_accumulator #(
 
         4'h5: begin // Special wait for accumulate to go low that won't cause alarm
           if(next_state <= 4'h5) begin
-            if(!accumulate) begin
+            if(accumulate_low_flag) begin
               next_state <= go_back_state;
+              clear_accumulate_low_flag <= 1;
             end else begin
               next_state <= next_state;
             end
           end
         end
-
+        default: begin
+          next_state <= next_state;
+        end
       endcase
+    end
+  end
+
+  always @(posedge reset or negedge accumulate or posedge clear_accumulate_low_flag) begin
+    if(reset) begin
+      accumulate_low_flag = 0;
+    end else if ( clear_accumulate_low_flag ) begin
+      accumulate_low_flag = 0;
+    end else if(state == 4'h4 || state == 4'h5) begin
+      if(!accumulate) begin
+        accumulate_low_flag = 1;
+      end else begin
+        accumulate_low_flag = accumulate_low_flag;
+      end
+    end else begin
+      accumulate_low_flag = accumulate_low_flag;
     end
   end
 
