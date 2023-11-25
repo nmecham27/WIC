@@ -18,6 +18,7 @@ module uart_tx (
   always @(reset or state or start_transmit or bit_count) begin
     if(reset) begin
       next_state <= 4'h0;
+      tx_data <= 1'b0;
     end else begin
       case (state)
         4'b0000: begin // Idle state
@@ -87,10 +88,10 @@ module uart_tx (
           bit_count <= 11'b0;
         end
         4'b0001: begin // Start bit stat count
-          bit_count <= bit_count + 1;
+          bit_count <= bit_count + 11'b1;
         end
         4'b0010: begin // Data bits
-          bit_count <= bit_count + 1;
+          bit_count <= bit_count + 11'b1;
         end
         default: begin
           bit_count <= bit_count;

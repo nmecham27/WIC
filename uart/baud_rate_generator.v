@@ -12,10 +12,10 @@ module baud_rate_generator #(
 
   always @(posedge clk or posedge reset) begin
     if (reset) begin
-      count <= 0;
-      baud_tick <= 0;
+      count <= 16'h0;
+      baud_tick <= 1'b0;
     end else begin
-      count <= count + 1;
+      count <= count + 16'h1;
       if (count >= (CLOCK_FREQ / BAUD_RATE) / 2) begin
         baud_tick <= ~baud_tick;
         count <= 0;

@@ -5,7 +5,7 @@ module uart_tx_tb;
   reg start_transmit;
   reg [7:0] data;
   reg load_data;
-  reg done;
+  wire done;
 
   wire [3:0] state;
   wire [10:0] bit_count;
