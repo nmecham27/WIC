@@ -18,7 +18,7 @@ module baud_rate_generator #(
       count <= count + 16'h1;
       if (count >= (CLOCK_FREQ / BAUD_RATE) / 2) begin
         baud_tick <= ~baud_tick;
-        count <= 0;
+        count <= 16'h0;
       end else begin
         baud_tick <= baud_tick;
       end

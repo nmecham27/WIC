@@ -44,7 +44,7 @@ module uart_rx #(
 
   end
   
-  always @(posedge rst or posedge state or posedge rx or posedge baud_count or posedge count or posedge soft_reset) begin
+  always @(rst or state or rx or baud_count or count or soft_reset) begin
     if (rst) begin
       next_state <= 4'h0;
       valid <= 1'b0;
@@ -54,46 +54,62 @@ module uart_rx #(
     end else begin  
       case (state)
         4'b0000: begin  // Idle state
-          if (!rx) begin
-            next_state <= 4'b0001;  // Start bit detected, move to next state
+          if(next_state == 4'h0) begin
+            if (!rx) begin
+              next_state <= 4'b0001;  // Start bit detected, move to next state
+            end else begin
+              next_state <= 4'b0000;
+            end
           end else begin
-            next_state <= 4'b0000;
+            next_state <= next_state;
           end
         end
         4'b0001: begin  // Baud offset state
-          if (count < (((CLOCK_FREQ/BAUD_RATE)/2)+15)) begin
-            baud_rst <= 1'b1;
+          if(next_state == 4'h1) begin
+            if (count < (((CLOCK_FREQ/BAUD_RATE)/2)+15)) begin
+              baud_rst <= 1'b1;
+            end else begin
+              valid <= 1'b0;
+              baud_rst <= 1'b0;
+              next_state <= 4'b0010;
+            end
           end else begin
-            valid <= 1'b0;
-            baud_rst <= 1'b0;
-            next_state <= 4'b0010;
+            next_state <= next_state;
           end
         end
         4'b0010: begin  // Data state
-          if (baud_count == 8) begin
-            next_state <= 4'b0011;  // All data bits received, move to next state
+          if(next_state == 4'h2) begin
+            if (baud_count == 8) begin
+              next_state <= 4'b0011;  // All data bits received, move to next state
+            end
+          end else begin
+            next_state <= next_state;
           end
         end
         4'b0011: begin  // Stop bit state
-          if (baud_count >= 9 && baud_count < 10) begin
-            if(rx) begin
-              valid <= 1'b1;
-              data[0] <= shift_reg[0];
-              data[1] <= shift_reg[1];
-              data[2] <= shift_reg[2];
-              data[3] <= shift_reg[3];
-              data[4] <= shift_reg[4];
-              data[5] <= shift_reg[5];
-              data[6] <= shift_reg[6];
-              data[7] <= shift_reg[7];
-              next_state <= 4'b0000;  // Stop bit received, return to idle state
+          if(next_state == 4'h3) begin
+            if (baud_count >= 9 && baud_count < 10) begin
+              if(rx) begin
+                valid <= 1'b1;
+                data[0] <= shift_reg[0];
+                data[1] <= shift_reg[1];
+                data[2] <= shift_reg[2];
+                data[3] <= shift_reg[3];
+                data[4] <= shift_reg[4];
+                data[5] <= shift_reg[5];
+                data[6] <= shift_reg[6];
+                data[7] <= shift_reg[7];
+                next_state <= 4'b0000;  // Stop bit received, return to idle state
+              end
+            end else if (baud_count >= 10) begin
+              next_state <= 4'b0000;  // Stop bit not received, return to idle state
+              valid <= 1'b0;
             end
-          end else if (baud_count >= 10) begin
-            next_state <= 4'b0000;  // Stop bit not received, return to idle state
-            valid <= 1'b0;
-          end
-          else begin
-            next_state <= 4'b0011; // keep in this state
+            else begin
+              next_state <= 4'b0011; // keep in this state
+            end
+          end else begin
+            next_state <= next_state;
           end
         end
         default: next_state <= 4'b0000;
@@ -105,14 +121,14 @@ module uart_rx #(
     if(rst) begin
       shift_reg <= 11'b00000000000;
     end else if (baud_rst) begin
-      baud_count <= 0;
+      baud_count <= 4'h0;
     end else if (state == 4'b0010) begin
       shift_reg[baud_count] <= rx;
-      baud_count <= baud_count + 1;
+      baud_count <= baud_count + 4'h1;
     end else if (state == 4'b0011) begin
-      baud_count <= baud_count + 1;
+      baud_count <= baud_count + 4'h1;
     end else begin
-      baud_count <= 0;
+      baud_count <= 4'h0;
     end
   end
 
