@@ -28,9 +28,9 @@ module uart_command_accumulator #(
             or posedge clk
             or posedge timeout_alarm
             or posedge state[0]
-            or posedge state[0]
-            or posedge state[0]
-            or posedge state[0]
+            or posedge state[1]
+            or posedge state[2]
+            or posedge state[3]
             or posedge accumulate
             or posedge soft_reset
             or posedge accumulate_low_flag) begin
