@@ -52,6 +52,11 @@ module uart_command_accumulator #(
       clear_accumulate_low_flag <= 0;
     end else if(soft_reset) begin
       done <= 1'b0;
+      internal_value_holder <= 1024'h0;
+      output_data_size <= 8'h0;
+      output_index <= 7;
+      next_state <= 4'h0;
+      go_back_state <= 4'h0;
     end else begin
       clear_accumulate_low_flag <= 0; // For ease of using just clear this flag before doing anything
       case(state)
@@ -68,7 +73,7 @@ module uart_command_accumulator #(
             output_index <= output_index + 8;
           end else if(next_state == 4'h0) begin
             next_state <= 4'h0; // Stay in this state
-            done <= 1'b1;
+            done <= done;
             reset_timeout_alarm <= 1'b1;
             output_index <= 7;
             internal_value_holder <= 1024'h0;
@@ -201,8 +206,8 @@ module uart_command_accumulator #(
     end
   end
 
-  always @(posedge reset or negedge accumulate or posedge clear_accumulate_low_flag) begin
-    if(reset) begin
+  always @(posedge reset or posedge soft_reset or negedge accumulate or posedge clear_accumulate_low_flag) begin
+    if(reset || soft_reset) begin
       accumulate_low_flag <= 0;
     end else if ( clear_accumulate_low_flag ) begin
       accumulate_low_flag <= 0;

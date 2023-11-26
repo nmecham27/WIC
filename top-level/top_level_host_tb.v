@@ -1,5 +1,6 @@
-`include "../uart/uart_tx.v"
-`include "../uart/baud_rate_generator.v"
+`include "../uart/imported_uart_tx.v"
+`include "../uart/imported_uart_rx.v"
+//`include "../uart/baud_rate_generator.v"
 
 `timescale 1ns/1ps
 module top_level_host_tb;
@@ -37,7 +38,9 @@ module top_level_host_tb;
 
   parameter BAUD_RATE = 9600;
   parameter CLOCK_FREQ = 50000000;
+  parameter c_CLKS_PER_BIT    = 5208;
 
+  /*
   // Instantiate baud_rate_generator module
   baud_rate_generator #(
     .BAUD_RATE(BAUD_RATE),
@@ -47,18 +50,21 @@ module top_level_host_tb;
     .reset(reset),
     .baud_out(baud_clk)
   );
+  */
+
+  wire tx_active;
 
   // Instantiate uart_tx module
-  uart_tx tx (
-    .clk(baud_clk),
-    .reset(reset),
-    .start_transmit(start_transmit),
-    .data(uart_tx),
-    .load_data(load_data),
-    .tx_data(host_uart_rx),
-    .tx_finish(tx_done)
+  uart_tx #(.CLKS_PER_BIT(c_CLKS_PER_BIT)) tx(
+    .i_Clock(clk),
+    .i_Tx_DV(start_transmit),
+    .i_Tx_Byte(uart_tx),
+    .o_Tx_Serial(host_uart_rx),
+    .o_Tx_Done(tx_done),
+    .o_Tx_Active(tx_active)
   );
 
+  /*
   // Instantiate uart_tx module
   uart_tx ble_tx (
     .clk(baud_clk),
@@ -69,18 +75,15 @@ module top_level_host_tb;
     .tx_data(ble_uart_rx),
     .tx_finish(ble_tx_done)
   );
+  */
 
   // Instantiate uart_rx module
-  uart_rx #(
-    .BAUD_RATE(BAUD_RATE),
-    .CLOCK_FREQ(CLOCK_FREQ)
-  ) rx (
-    .clk(clk),
-    .rst(reset),
-    .rx(ble_uart_tx),
+  uart_rx #(.CLKS_PER_BIT(c_CLKS_PER_BIT)) rx (
+    .i_Clock(clk),
+    .i_Rx_Serial(ble_uart_tx),
     .soft_reset(soft_reset),
-    .data(ble_uart_rx_data),
-    .valid(rx_valid)
+    .o_Rx_Byte(ble_uart_rx_data),
+    .o_Rx_DV(rx_valid)
   );
 
   // Instantiate the DUT
@@ -99,7 +102,7 @@ module top_level_host_tb;
   );
 
   parameter ENCRYPT_ENABLE = 88'hEFBE0101FFFFFFFFFFFF01;
-  parameter ENCRYPT_DISABLE = 72'h0001FFFFFFFFFFFF01;
+  parameter ENCRYPT_DISABLE = 88'hEFBE0001FFFFFFFFFFFF01;
   parameter ENCRYPT_BAD_FORMAT_TARGET = 72'h0001FFFFFF27FFFF01;
   parameter ENCRYPT_BAD_FORMAT_SIZE = 72'h0002FFFFFFFFFFFF01;
   parameter READ_YAW = 56'hFF27FF27FF2703;
@@ -118,25 +121,27 @@ module top_level_host_tb;
     clk = 0;
     index = 7;
     reset = 1'b1;
-    #10 reset = 1'b0;
+    start_transmit = 1'b0;
+    #20 reset = 1'b0;
+
+    #20;
     
     while(index <= 87) begin
       uart_tx = ENCRYPT_DISABLE[index -: 8];
-      #5;
-      load_data = 1'b1;
-      #5;
-      load_data = 1'b0;
-      #5;
+      #20;
       start_transmit = 1'b1;
-      #5;
+      #20;
       start_transmit = 1'b0;
-      #5;
+      
       while(!tx_done) begin
+        //$display("Waiting for tx_done");
         #20;
       end
       index = index + 8;
-      #5;
+      #20;
     end
+
+    $display("Supposedly done sending byte");
 
     soft_reset = 1'b1;
     // Add delays and other stimulus as needed
@@ -149,27 +154,29 @@ module top_level_host_tb;
     end
 
     index = 7;
+    $stop;
     #5000000;
 
+    /*
     while(index <= 47) begin
       ble_uart_tx_data = ENCRYPT_COMMAND_RSP_FROM_SLAVE[index -: 8];
       $display("Sending uart packet %x", ble_uart_tx_data);
-      #5;
+      #10;
       ble_load_data = 1'b1;
-      #5;
+      #20;
       ble_load_data = 1'b0;
-      #5;
+      #10;
       ble_start_transmit = 1'b1;
-      #5;
+      #20;
       ble_start_transmit = 1'b0;
-      #5;
+      #20;
       while(!ble_tx_done) begin
         #20;
       end
       index = index + 8;
-      #5;
+      #20;
     end
-    
+    */
     // Continue adding stimulus and delays as needed
   end
 
