@@ -398,17 +398,19 @@ module top_level (
                   ble_uart_load_data <= 1'b0; // Signal that we are done loading data
                   ble_uart_start_transmit <= 1'b1; // Tell the uart module to send the data along
                   if(transmit_index >= 143) begin // If we have transmitted everything
-                    // Move to rx start state
-                    next_state <= 8'h4;
+                    // Move to final state
+                    soft_reset <= 1'b1;
+                    next_state <= 8'hFC; // Done so go back to initial
                   end else begin // if we haven't transmitted everything go to a state
                     transmit_index <= transmit_index + 8;
-                    next_state <= 8'h2; //
+                    next_state <= 8'h2;
                   end
               end else begin
                 next_state <= next_state;
               end
             end
 
+            /*
             8'h4: begin // RX start
               // continuously send AT+RX command to ble module
               // if we get something on the uart (uart RX valid high) then move on
@@ -617,7 +619,7 @@ module top_level (
                   host_uart_load_data <= 1'b0; // Signal that we are done loading data
                   host_uart_start_transmit <= 1'b1; // Tell the uart module to send the data along
                   if(host_command_transmit_index >= 1023) begin // If we have transmitted everything
-                    // Move to rx start state
+                    // Move to final
                     soft_reset <= 1'b1;
                     next_state <= 8'hFC; // Done so go back to initial
                   end else begin // if we haven't transmitted everything go to a state
@@ -628,6 +630,8 @@ module top_level (
                 next_state <= next_state;
               end
             end
+
+            */
 
             8'hFC: begin
               if(next_state == 8'hFC) begin
