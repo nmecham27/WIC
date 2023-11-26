@@ -28,20 +28,24 @@ module uart_rx #(
     .baud_out(baud_clk)  // Connect baud_out to baud_clk
   );
   
-  always @(posedge clk or posedge rst or posedge soft_reset) begin
+  always @(posedge clk or posedge rst) begin
     if (rst) begin
       state <= 4'b0000;
-      count <= 4'b0000;
     end else begin
       state <= next_state;
     end
+  end
 
-    if (state == 4'b0001) begin
-      count <= count + 1;
-    end else begin
+  always @(posedge clk or posedge rst) begin
+    if (rst) begin
       count <= 0;
+    end else begin
+      if (state == 4'b0001) begin
+        count <= count + 1;
+      end else begin
+        count <= 0;
+      end
     end
-
   end
   
   always @(rst or state or rx or baud_count or count or soft_reset) begin
