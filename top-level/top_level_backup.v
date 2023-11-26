@@ -4,7 +4,7 @@
 `include "../uart-command-accumulator/uart_command_accumulator.v"
 `include "../uart-command-enc-dec/host_uart_command_enc.v"
 `include "host_specific_top_rx_from_host.v"
-//`include "slave_command_to_spi.v"
+`include "slave_command_to_spi.v"
 
 module top_level (
   input wire clk,
@@ -250,8 +250,6 @@ module top_level (
     .done(encrypt_decrypt_done)
   );
 
-  // Comment out the slave side stuff
-  /*
   // Instantiate from the encode dedcode until the spi
   slave_command_to_spi #(
     .CLKS_PER_HALF_BIT(CLKS_PER_HALF_BIT)
@@ -276,7 +274,6 @@ module top_level (
     .o_SPI_CS_n(o_SPI_CS_n),
     .recieved_byte_count(recieved_byte_count)
   );
-  */
 
   reg [7:0] state;
   reg [7:0] next_state;
@@ -661,8 +658,6 @@ module top_level (
             end
           endcase
       end else begin// Add processing for slave side here
-          // Uncomment latter
-          /*
           case(state)
             8'h0:begin //IDLE // RX start
               // continuously send AT+RX command to ble module
@@ -993,7 +988,6 @@ module top_level (
             end
 
           endcase
-          */
       end
     end
   end
