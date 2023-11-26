@@ -101,6 +101,35 @@ always @(posedge clk or posedge reset) begin
       4'h0: begin
         if(next_state == 4'h0) begin
           if (start) begin
+            // Set the tx_command register to "AT+BLEUARTTX"
+            tx_command[7:0] <= ASCII_A;
+            tx_command[15:8] <= ASCII_T;
+            tx_command[23:16] <= ASCII_PLUS;
+            tx_command[31:24] <= ASCII_B;
+            tx_command[39:32] <= ASCII_L;
+            tx_command[47:40] <= ASCII_E;
+            tx_command[55:48] <= ASCII_U;
+            tx_command[63:56] <= ASCII_A;
+            tx_command[71:64] <= ASCII_R;
+            tx_command[79:72] <= ASCII_T;
+            tx_command[87:80] <= ASCII_T;
+            tx_command[95:88] <= ASCII_X;
+            tx_command[103:96] <= ASCII_EQUAL;
+
+            // Set the rx_command register to "AT+BLEUARTRX"
+            rx_command[7:0] <= ASCII_A;
+            rx_command[15:8] <= ASCII_T;
+            rx_command[23:16] <= ASCII_PLUS;
+            rx_command[31:24] <= ASCII_B;
+            rx_command[39:32] <= ASCII_L;
+            rx_command[47:40] <= ASCII_E;
+            rx_command[55:48] <= ASCII_U;
+            rx_command[63:56] <= ASCII_A;
+            rx_command[71:64] <= ASCII_R;
+            rx_command[79:72] <= ASCII_T;
+            rx_command[87:80] <= ASCII_R;
+            rx_command[95:88] <= ASCII_X;
+            
             next_state <= 4'h1;
             done <= 1'b0;
           end else begin
