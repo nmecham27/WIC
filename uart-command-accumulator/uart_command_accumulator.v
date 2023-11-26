@@ -59,13 +59,13 @@ module uart_command_accumulator #(
             output_data <= 1024'h0;
             reset_timeout_alarm <= 1'b0;
             output_data_size <= 8'h1;
-            internal_value_holder[output_index -: 8] = input_data;
-            output_index = output_index + 8;
+            internal_value_holder[output_index -: 8] <= input_data;
+            output_index <= output_index + 8;
           end else if(next_state == 4'h0) begin
             next_state <= 4'h0; // Stay in this state
             done <= 1'b1;
             reset_timeout_alarm <= 1'b1;
-            output_index = 7;
+            output_index <= 7;
             internal_value_holder <= 1024'h0;
           end else begin
             next_state <= next_state;
@@ -78,46 +78,46 @@ module uart_command_accumulator #(
               if(ble_side) begin
                 if(input_data != 8'h0D) begin // check for carriage return
                   if(output_index <= 1023) begin
-                    internal_value_holder[output_index -: 8] = input_data[7:0];
-                    output_index = output_index + 8;
-                    output_data_size = output_data_size + 8'h1;
+                    internal_value_holder[output_index -: 8] <= input_data[7:0];
+                    output_index <= output_index + 8;
+                    output_data_size <= output_data_size + 8'h1;
                     go_back_state <= 4'h1; // Stay in this state
                     next_state <= 4'h4;
                   end else begin
                     // We received too many bytes without getting the terminate byte,
                     // we should set the error flag and return to the initial state
-                    output_index = 7;
+                    output_index <= 7;
                     error <= 1'b1;
                     internal_value_holder <= 1024'h0;
                     next_state <= 4'h0; // Go back to initial state
                   end
                 end else begin
-                  next_state = 4'h3; // Move right to the output state
+                  next_state <= 4'h3; // Move right to the output state
                 end
               end else begin
                 if( input_data != 8'hBE ) begin
                   if(output_index <= 1023) begin
-                    internal_value_holder[output_index -: 8] = input_data[7:0];
-                    output_index = output_index + 8;
-                    output_data_size = output_data_size + 8'h1;
-                    go_back_state = 4'h1; // Stay in this state
-                    next_state = 4'h4;
+                    internal_value_holder[output_index -: 8] <= input_data[7:0];
+                    output_index <= output_index + 8;
+                    output_data_size <= output_data_size + 8'h1;
+                    go_back_state <= 4'h1; // Stay in this state
+                    next_state <= 4'h4;
                   end else begin
                     // We received too many bytes without getting the terminate byte,
                     // we should set the error flag and return to the initial state
-                    output_index = 7;
+                    output_index <= 7;
                     error <= 1'b1;
                     internal_value_holder <= 1024'h0;
                     next_state <= 4'h0; // Go back to initial state
                   end
                 end else begin
-                  go_back_state = 4'h2; // Move to the final byte state
-                  next_state = 4'h4;
+                  go_back_state <= 4'h2; // Move to the final byte state
+                  next_state <= 4'h4;
                 end
               end
             end else if (timeout_alarm) begin
               error <= 1'b1;
-              output_index = 7;
+              output_index <= 7;
               internal_value_holder <= 1024'h0;
               next_state <= 4'h0; // Go back to initial state
             end else begin
@@ -133,15 +133,15 @@ module uart_command_accumulator #(
             if(accumulate && !timeout_alarm) begin
               if( input_data != 8'hEF ) begin
                 error <= 1'b1;
-                output_index = 7;
+                output_index <= 7;
                 internal_value_holder <= 1024'h0;
                 next_state <= 4'h0; // Go back to initial state
               end else begin
-                next_state = 4'h3; // Move to the final output state
+                next_state <= 4'h3; // Move to the final output state
               end
             end else if (timeout_alarm) begin
               error <= 1'b1;
-              output_index = 7;
+              output_index <= 7;
               internal_value_holder <= 1024'h0;
               next_state <= 4'h0; // Go back to initial state
             end else begin
@@ -154,7 +154,7 @@ module uart_command_accumulator #(
 
         4'h3: begin // Output state
           if(next_state == 4'h3) begin
-            output_data = internal_value_holder;
+            output_data <= internal_value_holder;
             done <= 1'b1;
             next_state <= 4'h5;
             go_back_state <= 4'h0;
@@ -170,7 +170,7 @@ module uart_command_accumulator #(
               clear_accumulate_low_flag <= 1;
             end else if (timeout_alarm) begin
               error <= 1'b1;
-              output_index = 7;
+              output_index <= 7;
               internal_value_holder <= 1024'h0;
               next_state <= 4'h0; // Go back to initial state
             end else begin
@@ -198,17 +198,17 @@ module uart_command_accumulator #(
 
   always @(posedge reset or negedge accumulate or posedge clear_accumulate_low_flag) begin
     if(reset) begin
-      accumulate_low_flag = 0;
+      accumulate_low_flag <= 0;
     end else if ( clear_accumulate_low_flag ) begin
-      accumulate_low_flag = 0;
+      accumulate_low_flag <= 0;
     end else if(state == 4'h4 || state == 4'h5) begin
       if(!accumulate) begin
-        accumulate_low_flag = 1;
+        accumulate_low_flag <= 1;
       end else begin
-        accumulate_low_flag = accumulate_low_flag;
+        accumulate_low_flag <= accumulate_low_flag;
       end
     end else begin
-      accumulate_low_flag = accumulate_low_flag;
+      accumulate_low_flag <= accumulate_low_flag;
     end
   end
 
