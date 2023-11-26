@@ -284,19 +284,7 @@ module top_level (
   integer host_command_transmit_index;
   integer valid_loop_count;
 
-  always @(posedge reset
-           or posedge accumulated_done
-           or posedge state
-           or posedge timeout_alarm
-           or posedge host_command_decode_done
-           or posedge ble_uart_tx_done
-           or posedge ble_encoder_done
-           or posedge host_ble_accum_done
-           or posedge host_encoder_done
-           or posedge host_uart_tx_done
-           or posedge valid_out_from_imu
-           or posedge encrypt_decrypt_done
-           or posedge accumulated_error) begin
+  always @(*) begin
     if(reset) begin
       // Reset variables
       transmit_index <= 7;
@@ -338,8 +326,8 @@ module top_level (
                 if(!accumulated_error) begin
                   if(accumulated_done) begin
                     next_state <= 8'h1; // Go to state to get bluetooth encoded packet
-                    accumulated_input_from_host = accumulated_output_data;
-                    decode_host_start = 1'b1; 
+                    accumulated_input_from_host <= accumulated_output_data;
+                    decode_host_start <= 1'b1; 
                     reset_timeout_alarm <= 1'b1;
                     transmit_index <= 7;
                     rx_packet_transmit_index <= 7;
@@ -369,7 +357,7 @@ module top_level (
             8'h1: begin // Get bluetooth encoded packet state
               if(next_state == 8'h1) begin
                 reset_timeout_alarm <= 1'b0;
-                decode_host_start = 1'b0;
+                decode_host_start <= 1'b0;
                 if(host_command_decode_done) begin
                   if(!host_command_decode_error) begin
                     local_encoded_command_for_slave <= encoded_command_for_slave;
@@ -389,7 +377,7 @@ module top_level (
 
             8'h2: begin // Load state
               if(next_state == 8'h2) begin
-                ble_uart_start_transmit = 1'b0;
+                ble_uart_start_transmit <= 1'b0;
                 if(ble_uart_tx_done) begin
                   ble_uart_tx_data <= local_encoded_command_for_slave[transmit_index -: 8];
                   ble_uart_load_data <= 1'b1;
@@ -404,13 +392,13 @@ module top_level (
 
             8'h3: begin // Transmit State
               if(next_state == 8'h3) begin
-                  ble_uart_load_data = 1'b0; // Signal that we are done loading data
-                  ble_uart_start_transmit = 1'b1; // Tell the uart module to send the data along
+                  ble_uart_load_data <= 1'b0; // Signal that we are done loading data
+                  ble_uart_start_transmit <= 1'b1; // Tell the uart module to send the data along
                   if(transmit_index >= 143) begin // If we have transmitted everything
                     // Move to rx start state
                     next_state <= 8'h4;
                   end else begin // if we haven't transmitted everything go to a state
-                    transmit_index = transmit_index + 8;
+                    transmit_index <= transmit_index + 8;
                     next_state <= 8'h2; //
                   end
               end else begin
@@ -423,12 +411,12 @@ module top_level (
               // if we get something on the uart (uart RX valid high) then move on
               // or we could timeout.
               if(next_state == 8'h4) begin
-                  ble_uart_start_transmit = 1'b0; // Tell the uart module to send the data along
+                  ble_uart_start_transmit <= 1'b0; // Tell the uart module to send the data along
 
                   // Get the AT command for rx
-                  ble_encoder_input_data = 32'h0;
-                  ble_encoder_cmd = 4'h2; // We are requesting a AT+BLEUARTRX packet
-                  ble_encoder_start = 1'b1;
+                  ble_encoder_input_data <= 32'h0;
+                  ble_encoder_cmd <= 4'h2; // We are requesting a AT+BLEUARTRX packet
+                  ble_encoder_start <= 1'b1;
                   next_state <= 8'h5;
 
               end else begin
@@ -453,7 +441,7 @@ module top_level (
             8'h6: begin // Load uart
               if(next_state == 8'h6) begin
                 if(!timeout_alarm) begin
-                  ble_uart_start_transmit = 1'b0;
+                  ble_uart_start_transmit <= 1'b0;
                   if(ble_uart_tx_done) begin
                     ble_uart_tx_data <= local_rx_encoded_packet[rx_packet_transmit_index -: 8];
                     ble_uart_load_data <= 1'b1;
@@ -473,13 +461,13 @@ module top_level (
             8'h7: begin // Transmit State
               if(next_state == 8'h7) begin
                 if(!timeout_alarm) begin
-                  ble_uart_load_data = 1'b0; // Signal that we are done loading data
-                  ble_uart_start_transmit = 1'b1; // Tell the uart module to send the data along
+                  ble_uart_load_data <= 1'b0; // Signal that we are done loading data
+                  ble_uart_start_transmit <= 1'b1; // Tell the uart module to send the data along
                   if(rx_packet_transmit_index >= 143) begin // If we have transmitted everything
                     // Move to check uart valid state
                     next_state <= 8'h8; // Move to state to check uart valid
                   end else begin // if we haven't transmitted everything go to a state
-                    rx_packet_transmit_index = rx_packet_transmit_index + 8;
+                    rx_packet_transmit_index <= rx_packet_transmit_index + 8;
                     next_state <= 8'h6; //
                   end
                 end else begin
@@ -494,12 +482,12 @@ module top_level (
             8'h8: begin // Check UART valid
               if(next_state == 8'h8) begin
                 if(!timeout_alarm) begin
-                  ble_uart_start_transmit = 1'b0;
+                  ble_uart_start_transmit <= 1'b0;
                   if(ble_uart_rx_valid) begin
                     //Move to packet accumulate state
                     next_state <= 8'h9;
                   end else if(valid_loop_count < 1000000) begin
-                    valid_loop_count = valid_loop_count + 1;
+                    valid_loop_count <= valid_loop_count + 1;
                     go_back_state <= 8'h8;
                     next_state <= 8'hFE; // Look out for this could cause issue with not rerunning block
                   end else begin
@@ -536,8 +524,8 @@ module top_level (
 
             8'ha: begin // Decrypt the first two bytes of data
               if(next_state == 8'ha) begin
-                encrypt_decrypt_input = local_host_ble_accumulated_data[15:0];
-                encrypt_decrypt_start = 1'b1;
+                encrypt_decrypt_input <= local_host_ble_accumulated_data[15:0];
+                encrypt_decrypt_start <= 1'b1;
                 next_state <= 8'hb;
               end else begin
                 next_state <= next_state;
@@ -546,19 +534,19 @@ module top_level (
 
             8'hb: begin // Decrypt the first two bytes of data
               if(next_state == 8'hb) begin
-                encrypt_decrypt_start = 1'b0;
+                encrypt_decrypt_start <= 1'b0;
                 if(encrypt_decrypt_done) begin
-                  local_decrypted_assembled_data = encrypt_decrypt_output;
+                  local_decrypted_assembled_data <= encrypt_decrypt_output;
                   if(encrypt_decrypt_output[7:0] == 8'h1) begin // Don't need to decrypt anything else
-                    host_encoder_cmd_select = encrypt_decrypt_output[7:0];
-                    host_encoder_input_data = local_received_spi_data_from_slave;
-                    host_encoder_suc_or_fail = local_host_ble_accumulated_data[31];
-                    host_encoder_start = 1'b1;
+                    host_encoder_cmd_select <= encrypt_decrypt_output[7:0];
+                    host_encoder_input_data <= local_received_spi_data_from_slave;
+                    host_encoder_suc_or_fail <= local_host_ble_accumulated_data[31];
+                    host_encoder_start <= 1'b1;
                     next_state <= 8'hd;
                   end else begin  // Need to decrypt one more chunk
-                    host_encoder_cmd_select = encrypt_decrypt_output[7:0];
-                    encrypt_decrypt_input = local_host_ble_accumulated_data[31:16];
-                    encrypt_decrypt_start = 1'b1;
+                    host_encoder_cmd_select <= encrypt_decrypt_output[7:0];
+                    encrypt_decrypt_input <= local_host_ble_accumulated_data[31:16];
+                    encrypt_decrypt_start <= 1'b1;
                     next_state <= 8'hc;
                   end
                 end else begin
@@ -571,12 +559,12 @@ module top_level (
 
             8'hc: begin // Decrypt the last two bytes of data
               if(next_state == 8'hc) begin
-                encrypt_decrypt_start = 1'b0;
+                encrypt_decrypt_start <= 1'b0;
                 if(encrypt_decrypt_done) begin
-                  local_decrypted_assembled_data[31:16] = encrypt_decrypt_output;
-                  host_encoder_input_data = encrypt_decrypt_output;
-                  host_encoder_suc_or_fail = local_host_ble_accumulated_data[31];
-                  host_encoder_start = 1'b1;
+                  local_decrypted_assembled_data[31:16] <= encrypt_decrypt_output;
+                  host_encoder_input_data <= encrypt_decrypt_output;
+                  host_encoder_suc_or_fail <= local_host_ble_accumulated_data[31];
+                  host_encoder_start <= 1'b1;
                   next_state <= 8'hd;
                 end else begin
                   next_state <= next_state;
@@ -589,7 +577,7 @@ module top_level (
             8'hd: begin // Load the host command encoder
               if(next_state == 8'hd) begin
                 // Save the encoded command
-                host_encoder_start = 1'b0;
+                host_encoder_start <= 1'b0;
                 if(host_encoder_done) begin
                   if(!host_encoder_error) begin
                     local_host_encoded_command <= host_encoder_output_data;
@@ -608,7 +596,7 @@ module top_level (
 
             8'he: begin // Load state for sending command back to host
               if(next_state == 8'he) begin
-                host_uart_start_transmit = 1'b0;
+                host_uart_start_transmit <= 1'b0;
                 if(host_uart_tx_done) begin
                   host_uart_tx_data <= local_host_encoded_command[host_command_transmit_index -: 8];
                   host_uart_load_data <= 1'b1;
@@ -623,14 +611,14 @@ module top_level (
 
             8'hf: begin // Transmit State
               if(next_state == 8'hf) begin
-                  host_uart_load_data = 1'b0; // Signal that we are done loading data
-                  host_uart_start_transmit = 1'b1; // Tell the uart module to send the data along
+                  host_uart_load_data <= 1'b0; // Signal that we are done loading data
+                  host_uart_start_transmit <= 1'b1; // Tell the uart module to send the data along
                   if(host_command_transmit_index >= 1023) begin // If we have transmitted everything
                     // Move to rx start state
                     soft_reset <= 1'b1;
                     next_state <= 8'hFC; // Done so go back to initial
                   end else begin // if we haven't transmitted everything go to a state
-                    host_command_transmit_index = host_command_transmit_index + 8;
+                    host_command_transmit_index <= host_command_transmit_index + 8;
                     next_state <= 8'he; //
                   end
               end else begin
@@ -642,7 +630,7 @@ module top_level (
               if(next_state == 8'hFC) begin
                   soft_reset <= 1'b0;
                   next_state <= 8'h0;
-                  host_uart_start_transmit = 1'b0; // Doing this for when we get here from state d
+                  host_uart_start_transmit <= 1'b0; // Doing this for when we get here from state d
               end else begin
                 next_state <= next_state;
               end
@@ -690,12 +678,12 @@ module top_level (
                   transmit_index <= 7;
                   rx_packet_transmit_index <= 7;
                   host_command_transmit_index <= 7;
-                  ble_uart_start_transmit = 1'b0; // Set the uart start low
+                  ble_uart_start_transmit <= 1'b0; // Set the uart start low
 
                   // Get the AT command for rx
-                  ble_encoder_input_data = 32'h0;
-                  ble_encoder_cmd = 4'h2; // We are requesting a AT+BLEUARTRX packet
-                  ble_encoder_start = 1'b1;
+                  ble_encoder_input_data <= 32'h0;
+                  ble_encoder_cmd <= 4'h2; // We are requesting a AT+BLEUARTRX packet
+                  ble_encoder_start <= 1'b1;
                   next_state <= 8'h1;
 
               end else begin
@@ -722,7 +710,7 @@ module top_level (
 
             8'h2: begin // Load state for sending command back to host
               if(next_state == 8'h2) begin
-                host_uart_start_transmit = 1'b0;
+                host_uart_start_transmit <= 1'b0;
                 if(host_uart_tx_done) begin
                   host_uart_tx_data <= local_rx_encoded_packet[host_command_transmit_index -: 8];
                   host_uart_load_data <= 1'b1;
@@ -737,12 +725,12 @@ module top_level (
 
             8'h3: begin // Transmit State
               if(next_state == 8'h3) begin
-                  host_uart_load_data = 1'b0; // Signal that we are done loading data
-                  host_uart_start_transmit = 1'b1; // Tell the uart module to send the data along
+                  host_uart_load_data <= 1'b0; // Signal that we are done loading data
+                  host_uart_start_transmit <= 1'b1; // Tell the uart module to send the data along
                   if(host_command_transmit_index >= 143) begin // If we have transmitted everything
                     next_state <= 8'h4; // Done so go to check UART Valid
                   end else begin // if we haven't transmitted everything go to '2' state
-                    host_command_transmit_index = host_command_transmit_index + 8;
+                    host_command_transmit_index <= host_command_transmit_index + 8;
                     next_state <= 8'h2; // Load state
                   end
               end else begin
@@ -753,17 +741,17 @@ module top_level (
             8'h4: begin // Check UART valid
               if(next_state == 8'h4) begin
 
-                host_uart_start_transmit = 1'b0;
+                host_uart_start_transmit <= 1'b0;
                 if(host_uart_rx_valid) begin
                   //Move to packet accumulate state
                   next_state <= 8'h5;
                 end else if(valid_loop_count < 1000000) begin
-                  valid_loop_count = valid_loop_count + 1;
+                  valid_loop_count <= valid_loop_count + 1;
                   go_back_state <= 8'h4;
                   next_state <= 8'hFE; // Go to a delay state
                 end else begin
-                  valid_loop_count = 0;
-                  host_command_transmit_index = 7;
+                  valid_loop_count <= 0;
+                  host_command_transmit_index <= 7;
                   next_state <= 8'h2;
                 end
                 
@@ -778,8 +766,8 @@ module top_level (
                 host_command_transmit_index <= 7; // Reset for use in the future
                 if(!accumulated_error) begin
                   if(accumulated_done) begin
-                    encrypt_decrypt_input = accumulated_output_data[15:0]; // This is supposed to just be 2 bytes
-                    encrypt_decrypt_start = 1'b1;
+                    encrypt_decrypt_input <= accumulated_output_data[15:0]; // This is supposed to just be 2 bytes
+                    encrypt_decrypt_start <= 1'b1;
                     next_state <= 8'h6; // Move to get decrypted data
                   end else begin
                     next_state <= next_state;
@@ -799,11 +787,11 @@ module top_level (
                 if(encrypt_decrypt_done) begin
                   local_decrypted_data <= encrypt_decrypt_output; // Save the value to use in other states
                   if(encrypt_decrypt_output == 16'h1) begin // Signal that encryption should be off
-                    encrypt_decrypt_passthrough = 1'b1;
+                    encrypt_decrypt_passthrough <= 1'b1;
                   end else if(encrypt_decrypt_output == 16'h2) begin// Signal that encryption should be on
-                    encrypt_decrypt_passthrough = 1'b0;
+                    encrypt_decrypt_passthrough <= 1'b0;
                   end else begin
-                    encrypt_decrypt_passthrough = encrypt_decrypt_passthrough;
+                    encrypt_decrypt_passthrough <= encrypt_decrypt_passthrough;
                     next_state <= 8'h7;
                   end
                 end else begin
@@ -856,12 +844,12 @@ module top_level (
               if(next_state == 8'h9) begin
                 Send_command_to_imu <= 1'b0;
                 if(local_decrypted_data == 16'h1 || local_decrypted_data == 16'h2) begin // Create a response for the encrypt enable/disable
-                  encrypt_decrypt_input = ENCRYPT_ENABLE_DISABLE_RSP_ID; // Encrypt the rsp id
-                  encrypt_decrypt_start = 1'b1;
+                  encrypt_decrypt_input <= ENCRYPT_ENABLE_DISABLE_RSP_ID; // Encrypt the rsp id
+                  encrypt_decrypt_start <= 1'b1;
                   next_state <= 8'hb; // Move to an output state
                 end else begin // For now just send back the read yaw
-                  encrypt_decrypt_input = data_from_imu[7:0] << 8 | READ_YAW_CMD_RSP_ID; // Encrypt the id first and the lowest byte of imu data
-                  encrypt_decrypt_start = 1'b1;
+                  encrypt_decrypt_input <= data_from_imu[7:0] << 8 | READ_YAW_CMD_RSP_ID; // Encrypt the id first and the lowest byte of imu data
+                  encrypt_decrypt_start <= 1'b1;
                   next_state <= 8'ha;
                 end
               end else begin
@@ -871,11 +859,11 @@ module top_level (
 
             8'ha: begin // Encrypt second two byte chunk for read yaw command
               if(next_state == 8'ha) begin
-                encrypt_decrypt_start = 1'b0;
+                encrypt_decrypt_start <= 1'b0;
                 if(encrypt_decrypt_done) begin
-                  local_response_packet_slave_to_host[15:0] = encrypt_decrypt_output;
-                  encrypt_decrypt_input = READ_YAW_CMD_RSP_ID; // Encrypt the id first
-                  encrypt_decrypt_start = 1'b1;
+                  local_response_packet_slave_to_host[15:0] <= encrypt_decrypt_output;
+                  encrypt_decrypt_input <= READ_YAW_CMD_RSP_ID; // Encrypt the id first
+                  encrypt_decrypt_start <= 1'b1;
                   next_state <= 8'hb;
                 end else begin
                   next_state <= next_state;
@@ -887,15 +875,15 @@ module top_level (
 
             8'hb: begin // Get the last encrypted data
               if(next_state == 8'hb) begin
-                encrypt_decrypt_start = 1'b0;
+                encrypt_decrypt_start <= 1'b0;
                 if(encrypt_decrypt_done) begin
                   if(local_decrypted_data == 16'h1 || local_decrypted_data == 16'h2) begin // Create a response for the encrypt enable/disable
-                    local_response_packet_slave_to_host[15:0] = encrypt_decrypt_output;
-                    local_response_packet_slave_to_host[30:16] = 0;
-                    local_response_packet_slave_to_host[31] = 1'b0; // set to success (this is for host side processing)
+                    local_response_packet_slave_to_host[15:0] <= encrypt_decrypt_output;
+                    local_response_packet_slave_to_host[30:16] <= 0;
+                    local_response_packet_slave_to_host[31] <= 1'b0; // set to success (this is for host side processing)
                   end else begin
-                    local_response_packet_slave_to_host[30:16] = encrypt_decrypt_output[14:0];
-                    local_response_packet_slave_to_host[31] = 1'b0; // this is for host side processing
+                    local_response_packet_slave_to_host[30:16] <= encrypt_decrypt_output[14:0];
+                    local_response_packet_slave_to_host[31] <= 1'b0; // this is for host side processing
                   end
                   next_state <= 8'hc;
                 end else begin
@@ -912,9 +900,9 @@ module top_level (
               // Encode the packet to send to ble module
               if(next_state == 8'hc) begin
                   // Get the AT command for tx
-                  ble_encoder_input_data = local_response_packet_slave_to_host;
-                  ble_encoder_cmd = 4'h1; // We are requesting a AT+BLEUARTTX packet
-                  ble_encoder_start = 1'b1;
+                  ble_encoder_input_data <= local_response_packet_slave_to_host;
+                  ble_encoder_cmd <= 4'h1; // We are requesting a AT+BLEUARTTX packet
+                  ble_encoder_start <= 1'b1;
                   next_state <= 8'hd;
               end else begin
                 next_state <= next_state;
@@ -938,7 +926,7 @@ module top_level (
 
             8'he: begin // Load state for sending command back to host
               if(next_state == 8'he) begin
-                host_uart_start_transmit = 1'b0;
+                host_uart_start_transmit <= 1'b0;
                 if(host_uart_tx_done) begin
                   host_uart_tx_data <= local_tx_encoded_packet[host_command_transmit_index -: 8];
                   host_uart_load_data <= 1'b1;
@@ -953,14 +941,14 @@ module top_level (
 
             8'hf: begin // Transmit State
               if(next_state == 8'hf) begin
-                  host_uart_load_data = 1'b0; // Signal that we are done loading data
-                  host_uart_start_transmit = 1'b1; // Tell the uart module to send the data along
+                  host_uart_load_data <= 1'b0; // Signal that we are done loading data
+                  host_uart_start_transmit <= 1'b1; // Tell the uart module to send the data along
                   if(host_command_transmit_index >= 143) begin // If we have transmitted everything
                     // Move to rx start state
                     soft_reset <= 1'b1;
                     next_state <= 8'hFC; // Done so go back to initial
                   end else begin // if we haven't transmitted everything go to 'e' state
-                    host_command_transmit_index = host_command_transmit_index + 8;
+                    host_command_transmit_index <= host_command_transmit_index + 8;
                     next_state <= 8'he; //
                   end
               end else begin
@@ -972,7 +960,7 @@ module top_level (
               if(next_state == 8'hFC) begin
                   soft_reset <= 1'b0;
                   next_state <= 8'h0;
-                  host_uart_start_transmit = 1'b0; // Doing this for when we get here from state d
+                  host_uart_start_transmit <= 1'b0; // Doing this for when we get here from state d
               end else begin
                 next_state <= next_state;
               end

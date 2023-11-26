@@ -74,7 +74,7 @@ module host_specific_top_rx_from_host (
     end
   end
 
-  always @(posedge reset or posedge send_packet or posedge state or posedge decode_done or posedge ble_enc_done or posedge encrypt_done) begin
+  always @(*) begin
     if(reset) begin
       command_dec_start <= 1'b0;
       encryption_passthrough <= 1'b1;
@@ -138,8 +138,8 @@ module host_specific_top_rx_from_host (
 
         4'h2: begin //Encrypt state
           if(next_state == 4'h2) begin
-            encrypt_input_two_bytes = decoded_cmd;
-            encryption_start = 1'b1;
+            encrypt_input_two_bytes <= decoded_cmd;
+            encryption_start <= 1'b1;
             next_state <= 4'h3;
           end else begin
             next_state <= next_state;
@@ -150,9 +150,9 @@ module host_specific_top_rx_from_host (
           if(next_state == 4'h3) begin
             encryption_start <= 1'b0;
             if(encrypt_done) begin
-              ble_input_data = encrypted_output_two_bytes;
-              ble_cmd = 4'h1; // This is a TX command
-              ble_enc_start = 1'b1;
+              ble_input_data <= encrypted_output_two_bytes;
+              ble_cmd <= 4'h1; // This is a TX command
+              ble_enc_start <= 1'b1;
               next_state <= 4'h4;
             end else begin
               next_state <= next_state;
