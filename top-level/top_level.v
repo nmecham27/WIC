@@ -240,6 +240,7 @@ module top_level (
     .error(host_encoder_error)
   );
 
+  /*
   // Module to use for encryption/decryption
   otp_encryption_decryption top_level_encryption_module (
     .input_data(encrypt_decrypt_input),
@@ -249,6 +250,7 @@ module top_level (
     .output_data(encrypt_decrypt_output),
     .done(encrypt_decrypt_done)
   );
+  */
 
   // Comment out the slave side stuff
   /*
