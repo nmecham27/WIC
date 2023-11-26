@@ -289,7 +289,7 @@ module top_level (
   integer host_command_transmit_index;
   integer valid_loop_count;
 
-  always @(*) begin
+  always @(posedge clk or posedge reset) begin
     if(reset) begin
       // Reset variables
       transmit_index <= 7;
