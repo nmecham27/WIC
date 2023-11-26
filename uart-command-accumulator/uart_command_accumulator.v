@@ -38,7 +38,7 @@ module uart_command_accumulator #(
   assign accumulate_low_flag_w = accumulate_low_flag;
   assign timeout_alarm_w = timeout_alarm;
 
-  always @( *) begin
+  always @( posedge clk or posedge reset) begin
     if(reset) begin
       output_data <= 1024'h0;
       output_data_size <= 8'h0;

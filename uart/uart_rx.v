@@ -48,7 +48,7 @@ module uart_rx #(
     end
   end
   
-  always @(rst or state or rx or baud_count or count or soft_reset) begin
+  always @(posedge clk or posedge clk) begin
     if (rst) begin
       next_state <= 4'h0;
       valid <= 1'b0;
