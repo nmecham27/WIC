@@ -46,8 +46,6 @@ reg [103:0] rx_command;
 reg [3:0] state;
 reg [3:0] next_state;
 
-integer i;
-
 always @(posedge clk or posedge reset) begin
   if(reset) begin
     state <= 4'h0;
@@ -56,7 +54,7 @@ always @(posedge clk or posedge reset) begin
   end
 end
 
-always @(*) begin
+always @(posedge clk or posedge reset) begin
   if (reset) begin
     // Reset output_data to 0
     output_data <= 0;
@@ -97,39 +95,50 @@ always @(*) begin
     // Check the command_select for what command we need to encode
     case (state)
       4'h0: begin
-        if (start) begin
-          next_state <= 4'h1;
-          done <= 1'b0;
+        if(next_state == 4'h0) begin
+          if (start) begin
+            next_state <= 4'h1;
+            done <= 1'b0;
+          end else begin
+            next_state <= next_state;
+          end
+        end else begin
+          next_state <= next_state;
         end
       end
       4'h1: begin
-        case( command_select )
-          4'h1: begin
-            // Concatenate tx_command and input_data and store it in output_data
-            output_data[103:0] <= tx_command[103:0];
-            output_data[111:104] <= input_data[7:0];
-            output_data[119:112] <= input_data[15:8];
-            output_data[127:120] <= input_data[23:16];
-            output_data[135:128] <= input_data[31:24];
-            output_data[143:136] <= ASCII_CARRIAGE_RETURN;
-          end
-          4'h2: begin
-            // Concatenate rx_command and input_data and store it in output_data
-            output_data[103:0] <= rx_command[103:0];
-            output_data[111:104] <= 8'h0;
-            output_data[119:112] <= 8'h0;
-            output_data[127:120] <= 8'h0;
-            output_data[135:128] <= 8'h0;
-            output_data[143:136] <= 8'h0;
-          end
-          default: begin
-            output_data <= 128'hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
-          end
-        endcase
-        done <= 1'b1;
-        next_state <= 4'h0;
+        if(next_state == 4'h1) begin
+          case( command_select )
+            4'h1: begin
+              // Concatenate tx_command and input_data and store it in output_data
+              output_data[103:0] <= tx_command[103:0];
+              output_data[111:104] <= input_data[7:0];
+              output_data[119:112] <= input_data[15:8];
+              output_data[127:120] <= input_data[23:16];
+              output_data[135:128] <= input_data[31:24];
+              output_data[143:136] <= ASCII_CARRIAGE_RETURN;
+            end
+            4'h2: begin
+              // Concatenate rx_command and input_data and store it in output_data
+              output_data[103:0] <= rx_command[103:0];
+              output_data[111:104] <= 8'h0;
+              output_data[119:112] <= 8'h0;
+              output_data[127:120] <= 8'h0;
+              output_data[135:128] <= 8'h0;
+              output_data[143:136] <= 8'h0;
+            end
+            default: begin
+              output_data <= 128'hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+            end
+          endcase
+          done <= 1'b1;
+          next_state <= 4'h0;
+        end else begin
+          next_state <= next_state;
+        end
       end
       default: begin
+        next_state <= 4'h0;
       end
     endcase
   end

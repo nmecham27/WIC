@@ -49,6 +49,11 @@ module bluetooth_encoder_tb;
     start = 1;
     #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
+
     #20;
     input_data = 32'h12345678;
     command_select = 4'h2;

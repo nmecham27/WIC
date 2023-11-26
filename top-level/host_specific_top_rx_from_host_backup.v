@@ -1,4 +1,4 @@
-//`include "../encryption-block/one_time_pad_encryption.v"
+`include "../encryption-block/one_time_pad_encryption.v"
 `include "../uart-command-enc-dec/host_uart_command_dec.v"
 `include "../bluetooth-encoder/bluetooth_encoder.v"
 
@@ -15,7 +15,7 @@ module host_specific_top_rx_from_host (
 
   // Inputs
   reg command_dec_start;
-  //reg[15:0] encrypt_input_two_bytes;
+  reg[15:0] encrypt_input_two_bytes;
   reg encryption_passthrough;
   reg encryption_start;
   reg[31:0] ble_input_data;
@@ -27,8 +27,8 @@ module host_specific_top_rx_from_host (
   wire[15:0] decoded_cmd;
   wire decode_done;
   wire decode_error;
-  //wire[15:0] encrypted_output_two_bytes;
-  //wire encrypt_done;
+  wire[15:0] encrypted_output_two_bytes;
+  wire encrypt_done;
   wire ble_enc_done;
   wire[143:0] ble_enc_output;
 
@@ -47,7 +47,6 @@ module host_specific_top_rx_from_host (
     .cmd_select(decoded_cmd)
   );
 
-  /*
   otp_encryption_decryption encryption_module (
     .input_data(encrypt_input_two_bytes),
     .reset(reset),
@@ -56,7 +55,6 @@ module host_specific_top_rx_from_host (
     .output_data(encrypted_output_two_bytes),
     .done(encrypt_done)
   );
-  */
 
   bluetooth_encoder ble_encoder (
     .input_data(ble_input_data),
@@ -93,18 +91,14 @@ module host_specific_top_rx_from_host (
       case(state)
 
         4'h0: begin
-          if(next_state == 4'h0) begin
-            if(send_packet) begin
-              done <= 1'b0;
-              error <= 1'b0;
-              command_dec_start <= 1'b1;
-              next_state <= 4'h1; // Move to the decrypt command state
-            end else begin
-              done <= 1'b1;
-              next_state <= 4'h0;
-            end
+          if(send_packet) begin
+            done <= 1'b0;
+            error <= 1'b0;
+            command_dec_start <= 1'b1;
+            next_state <= 4'h1; // Move to the decrypt command state
           end else begin
-            next_state <= next_state;
+            done <= 1'b1;
+            next_state <= 4'h0;
           end
         end
 
@@ -117,15 +111,15 @@ module host_specific_top_rx_from_host (
                 case(decoded_cmd)
 
                   16'h1: begin // If the command was encryption enable
-                    next_state <= 4'h3; // encrypt state
+                    next_state <= 4'h2; // encrypt state
                   end
 
                   16'h2: begin // If the command was encryption disable
-                    next_state <= 4'h3; // encrypt state
+                    next_state <= 4'h2; // encrypt state
                   end
 
                   16'h3: begin // If the command was encryption enable
-                    next_state <= 4'h3; // encrypt state
+                    next_state <= 4'h2; // encrypt state
                   end
 
                 endcase
@@ -144,7 +138,7 @@ module host_specific_top_rx_from_host (
 
         4'h2: begin //Encrypt state
           if(next_state == 4'h2) begin
-            //encrypt_input_two_bytes <= decoded_cmd;
+            encrypt_input_two_bytes <= decoded_cmd;
             encryption_start <= 1'b1;
             next_state <= 4'h3;
           end else begin
@@ -154,10 +148,15 @@ module host_specific_top_rx_from_host (
 
         4'h3: begin // Encode state
           if(next_state == 4'h3) begin
-              ble_input_data <= decoded_cmd;
+            encryption_start <= 1'b0;
+            if(encrypt_done) begin
+              ble_input_data <= encrypted_output_two_bytes;
               ble_cmd <= 4'h1; // This is a TX command
               ble_enc_start <= 1'b1;
               next_state <= 4'h4;
+            end else begin
+              next_state <= next_state;
+            end
           end else begin
             next_state <= next_state;
           end

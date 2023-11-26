@@ -64,8 +64,7 @@ module host_specific_top_rx_from_host_tb;
     send_packet = 1;
     #10;
     send_packet = 0;
-    input_data = 0;
-
+    
     while(!done) begin
       #10;
     end
@@ -75,7 +74,6 @@ module host_specific_top_rx_from_host_tb;
     input_data = ENCRYPT_DISABLE;
     send_packet = 1;
     #10;
-    input_data = 0;
     send_packet = 0;
 
     while(!done) begin
@@ -87,7 +85,6 @@ module host_specific_top_rx_from_host_tb;
     input_data = READ_YAW;
     send_packet = 1;
     #10;
-    input_data = 0;
     send_packet = 0;
 
     while(!done) begin
@@ -99,7 +96,6 @@ module host_specific_top_rx_from_host_tb;
     input_data = INVALID_COMMAND;
     send_packet = 1;
     #10;
-    input_data = 0;
     send_packet = 0;
 
     while(!done) begin

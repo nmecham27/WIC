@@ -62,11 +62,13 @@ module host_uart_command_dec (
                     end
                   end else begin
                     cmd_select <= 16'hFFFF;
+                    $display("BAD FORMAT OF COMMAND ID SECTION");
                     error <= 1'b1; // Set the error high since format was wrong
                     next_state <= 4'h0; // Go back to initial state
                   end
                 end else begin
                   cmd_select <= 16'hFFFF;
+                  $display("BAD FORMAT OF MIDDLE SECTION");
                   error <= 1'b1; // Set the error high since format was wrong
                   next_state <= 4'h0; // Go back to initial state
                 end
@@ -79,6 +81,7 @@ module host_uart_command_dec (
               end
 
               default: begin // Unknown command received
+                $display("UKNOWN COMMAND");
                 cmd_select <= 16'hFFFF;
                 error <= 1'b1;
                 next_state <= 4'h0;
