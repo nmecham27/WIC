@@ -50,29 +50,46 @@ module host_uart_command_dec_tb;
     input_data = ENCRYPT_ENABLE;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     #20;
     input_data = ENCRYPT_DISABLE;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     #20;
     input_data = READ_YAW;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     #20;
     input_data = READ_YAW;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
+
     #20;
     //Issue a reset
     reset = 1;
@@ -81,22 +98,34 @@ module host_uart_command_dec_tb;
     input_data = ENCRYPT_BAD_FORMAT_TARGET;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     #20;
     input_data = ENCRYPT_BAD_FORMAT_SIZE;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     #20;
     input_data = INVALID_COMMAND;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     // Apply test vectors
     

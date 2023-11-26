@@ -52,8 +52,12 @@ module host_uart_command_enc_tb;
     suc_or_fail_status = 1;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     #20;
     input_data = 32'h04030201;
@@ -61,8 +65,12 @@ module host_uart_command_enc_tb;
     suc_or_fail_status = 1;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     #20;
     input_data = 32'h04030201;
@@ -70,8 +78,12 @@ module host_uart_command_enc_tb;
     suc_or_fail_status = 0;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     #20;
 
@@ -85,8 +97,12 @@ module host_uart_command_enc_tb;
     input_data = 0;
     #5;
     start = 1;
-    #5;
+    #10;
     start = 0;
+
+    while(!done) begin
+      #10;
+    end
 
     // Apply test vectors
     
