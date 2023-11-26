@@ -24,7 +24,16 @@ module uart_command_accumulator #(
   integer output_index;
   integer timeout_count;
 
-  always @(posedge reset or posedge clk or posedge timeout_alarm or posedge state or posedge accumulate or posedge soft_reset or posedge accumulate_low_flag) begin
+  always @( posedge reset
+            or posedge clk
+            or posedge timeout_alarm
+            or posedge state[0]
+            or posedge state[0]
+            or posedge state[0]
+            or posedge state[0]
+            or posedge accumulate
+            or posedge soft_reset
+            or posedge accumulate_low_flag) begin
     if(reset) begin
       output_data <= 1024'h0;
       output_data_size <= 8'h0;
@@ -181,7 +190,7 @@ module uart_command_accumulator #(
           end
         end
         default: begin
-          next_state <= next_state;
+          next_state <= 4'h0;
         end
       endcase
     end
