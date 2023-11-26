@@ -38,12 +38,12 @@ module uart_rx #(
 
   always @(posedge clk or posedge rst) begin
     if (rst) begin
-      count <= 0;
+      count <= 16'h0;
     end else begin
       if (state == 4'b0001) begin
-        count <= count + 1;
+        count <= count + 16'h1;
       end else begin
-        count <= 0;
+        count <= 16'h0;
       end
     end
   end
