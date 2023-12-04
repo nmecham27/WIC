@@ -6844,3 +6844,44 @@ module top_level(clk, reset, host_uart_rx, ble_uart_rx, ble_side,
   NOR2X1 g168381(.A (n_2271), .B (n_547), .Z (n_2289));
 endmodule
 
+
+module soc_top(clk, reset, host_uart_rx, ble_uart_rx, ble_side,
+     host_uart_tx, ble_uart_tx, o_SPI_Clk, i_SPI_MISO, o_SPI_MOSI,
+     o_SPI_CS_n)
+
+     input clk, reset, host_uart_rx, ble_uart_rx, ble_side, i_SPI_MISO;
+     output host_uart_tx, o_SPI_Clk, ble_uart_tx, o_SPI_MOSI, o_SPI_CS_n;
+
+     wire clk, reset, host_uart_rx, ble_uart_rx, ble_side, i_SPI_MISO;
+     wire host_uart_tx, o_SPI_Clk, o_SPI_MOSI, ble_uart_tx, o_SPI_CS_n;
+
+     wire clk_PAD, reset_PAD, host_uart_rx_PAD, ble_uart_rx_PAD, ble_side_PAD, i_SPI_MISO_PAD;
+     wire host_uart_tx_PAD, o_SPI_Clk_PAD, o_SPI_MOSI_PAD, o_SPI_CS_n_PAD, ble_uart_tx_PAD;
+
+     top_level soc(.clk(clk_PAD), .reset(reset_PAD), .host_uart_rx(host_uart_rx_PAD), .ble_uart_rx(ble_uart_rx_PAD), .ble_side(ble_side_PAD), .host_uart_tx(host_uart_tx_PAD), .ble_uart_tx(ble_uart_tx_PAD), .o_SPI_Clk(o_SPI_Clk_PAD), .i_SPI_MISO(i_SPI_MISO_PAD), .o_SPI_MOSI(o_SPI_MOSI_PAD), .o_SPI_CS_n(o_SPI_CS_n_PAD));
+
+
+      //Corners
+      pad_corner corner0 ();
+      pad_corner corner1 ();
+      pad_corner corner2 ();
+      pad_corner corner3 ();
+
+      pad_vdd vdd0 ();
+      pad_gnd vss0 ();
+
+
+      pad_in clk_pad(.pad(clk), .DataIn(clk_PAD));
+      pad_in reset_pad(.pad(reset), .DataIn(reset_PAD));
+      pad_in host_uart_rx_pad(.pad(host_uart_rx), .DataIn(host_uart_rx_PAD));
+      pad_in ble_uart_rx_pad(.pad(ble_uart_rx), .DataIn(ble_uart_rx_PAD));
+      pad_in ble_side_pad(.pad(ble_side), .DataIn(ble_side_PAD));
+      pad_in i_SPI_MISO_pad(.pad(i_SPI_MISO), .DataIn(i_SPI_MISO_PAD));
+
+      pad_out host_uart_tx_pad(.DataOut(host_uart_tx), .pad(host_uart_tx_PAD));
+      pad_out o_SPI_Clk_pad(.DataOut(o_SPI_Clk), .pad(o_SPI_Clk_PAD));
+      pad_out ble_uart_tx(.DataOut(ble_uart_tx), .pad(ble_uart_tx_PAD));
+      pad_out o_SPI_MOSI_pad(.DataOut(o_SPI_MOSI), .pad(o_SPI_MOSI_PAD));
+      pad_out o_SPI_CS_n_pad(.DataOut(o_SPI_CS_n), .pad(o_SPI_CS_n_PAD));
+
+endmodule
